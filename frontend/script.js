@@ -23,38 +23,26 @@ const galleryImages = [
     'gallery/11.png'
 ];
 
-// Enhanced map locations data with 20+ locations
 const locations = [
-    // Adoption Centers
     {type: 'adoption', name: 'Happy Paws Adoption Center', lat: 27.6915, lng: 85.3240, contact: '+977-9812345678', description: 'Find your perfect companion here'},
     {type: 'adoption', name: 'Furry Friends Home', lat: 27.7172, lng: 85.3240, contact: '+977-9823456789', description: 'Loving homes for loving pets'},
     {type: 'adoption', name: 'Forever Home Kathmandu', lat: 27.7050, lng: 85.3100, contact: '+977-9834567891', description: '50+ pets ready for adoption'},
     {type: 'adoption', name: 'Pet Paradise Adoption', lat: 27.6880, lng: 85.3280, contact: '+977-9845678902', description: 'Cats and dogs looking for families'},
-    
-    // Animals in Danger
     {type: 'danger', name: 'Injured Dog - Urgent', lat: 27.7000, lng: 85.3300, contact: '+977-9834567890', description: 'Needs immediate medical attention'},
     {type: 'danger', name: 'Abandoned Puppies', lat: 27.6850, lng: 85.3150, contact: '+977-9845678901', description: '5 puppies found in street'},
     {type: 'danger', name: 'Injured Cat - Critical', lat: 27.7120, lng: 85.3180, contact: '+977-9856789013', description: 'Hit by vehicle, needs surgery'},
     {type: 'danger', name: 'Malnourished Dogs', lat: 27.6920, lng: 85.3250, contact: '+977-9867890124', description: 'Pack of 4 dogs, extremely weak'},
-    
-    // Free Vaccination Events
     {type: 'event', name: 'Free Vaccination Camp', lat: 27.7100, lng: 85.3200, contact: 'Register Now', description: 'Dec 20-22, 2024'},
     {type: 'event', name: 'Pet Health Checkup', lat: 27.6950, lng: 85.3350, contact: 'Register Now', description: 'Free health screening'},
     {type: 'event', name: 'Rabies Prevention Drive', lat: 27.7030, lng: 85.3120, contact: 'Register Now', description: 'Dec 25-26, 2024'},
-    
-    // NGOs/INGOs
     {type: 'ngo', name: 'Animal Welfare Society', lat: 27.7050, lng: 85.3180, contact: '+977-9856789012', description: 'Registered NGO since 2010'},
     {type: 'ngo', name: 'Kathmandu Pet Care', lat: 27.6980, lng: 85.3280, contact: '+977-9867890123', description: 'Community-driven organization'},
     {type: 'ngo', name: 'Nepal Animal Rights', lat: 27.7090, lng: 85.3220, contact: '+977-9878901235', description: 'Advocacy and rescue'},
     {type: 'ngo', name: 'Paws for Change', lat: 27.6890, lng: 85.3190, contact: '+977-9889012346', description: 'International animal welfare'},
-    
-    // Shelters
     {type: 'shelter', name: 'Safe Haven Shelter', lat: 27.7120, lng: 85.3220, contact: '+977-9878901234', description: 'Capacity: 150 animals'},
     {type: 'shelter', name: 'Hope Animal Shelter', lat: 27.6920, lng: 85.3320, contact: '+977-9889012345', description: 'Emergency shelter available'},
     {type: 'shelter', name: 'Rainbow Bridge Sanctuary', lat: 27.7010, lng: 85.3140, contact: '+977-9890123457', description: 'Senior pet care facility'},
     {type: 'shelter', name: 'Second Chance Shelter', lat: 27.6870, lng: 85.3270, contact: '+977-9801234568', description: 'Rehabilitation center'},
-    
-    // Veterinary Clinics
     {type: 'vet', name: 'Pet Care Veterinary Clinic', lat: 27.7080, lng: 85.3260, contact: '+977-9890123456', description: '24/7 emergency service'},
     {type: 'vet', name: 'Animal Hospital Kathmandu', lat: 27.6970, lng: 85.3190, contact: '+977-9801234567', description: 'Specialized pet care'},
     {type: 'vet', name: 'Valley Vet Center', lat: 27.7040, lng: 85.3290, contact: '+977-9812345679', description: 'Surgery and diagnostics'},
@@ -112,7 +100,6 @@ function navigateLightbox(direction) {
     }, 150);
 }
 
-// Keyboard navigation for lightbox
 document.addEventListener('keydown', function(event) {
     const lightbox = document.getElementById('lightboxOverlay');
     if (lightbox.classList.contains('active')) {
@@ -368,7 +355,7 @@ function handleSignupFileUpload(event) {
     const files = event.target.files;
     const uploadedFilesDiv = document.getElementById('signupUploadedFiles');
     for (let file of files) {
-        signupUploadedFiles.push(file);
+        signupUploadedFiles.push(file.name);
         const fileItem = document.createElement('div');
         fileItem.className = 'uploaded-file-item';
         fileItem.innerHTML = `
@@ -381,21 +368,44 @@ function handleSignupFileUpload(event) {
 
 function handleLogin(event) {
     event.preventDefault();
+    
+    // Check if database is initialized
+    if (!dbInitialized) {
+        showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
+        return;
+    }
+    
     const email = event.target.querySelector('input[type="email"]').value;
-    const userName = email.split('@')[0];
-    isLoggedIn = true;
-    const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
-    userAvatar.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now();
-    googleUser.name = userName;
-    userIcon.style.display = 'none';
-    userAvatar.style.display = 'block';
-    closeModal();
-    showNotification('Login Successful!', `Welcome back, ${userName}!`);
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    const result = loginUser(email, password);
+    
+    if (result.success) {
+        isLoggedIn = true;
+        googleUser = result.user;
+        const userIcon = document.getElementById('userIcon');
+        const userAvatar = document.getElementById('userAvatar');
+        const signOutBtn = document.getElementById('signOutBtn');
+        userAvatar.src = result.user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + result.user.name;
+        userIcon.style.display = 'none';
+        userAvatar.style.display = 'block';
+        signOutBtn.style.display = 'inline-block';
+        closeModal();
+        showNotification('Login Successful!', `Welcome back, ${result.user.name}!`);
+    } else {
+        showNotification('Login Failed', result.message);
+    }
 }
 
 function handleSignup(event) {
     event.preventDefault();
+    
+    // Check if database is initialized
+    if (!dbInitialized) {
+        showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
+        return;
+    }
+    
     const name = document.getElementById('signupName').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
@@ -410,61 +420,89 @@ function handleSignup(event) {
         return;
     }
 
-    isLoggedIn = true;
-    googleUser.name = name;
-    const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
-    const signOutBtn = document.getElementById('signOutBtn');
-    userAvatar.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now();
-    userIcon.style.display = 'none';
-    userAvatar.style.display = 'block';
-    signOutBtn.style.display = 'inline-block';
-    closeModal();
-
-    const userTypeNames = {
-        user: 'User',
-        ngo: "NGO/INGO",
-        shelter: 'Shelter',
-        veterinary: 'Veterinary'
+    const userData = {
+        email: email,
+        password: password,
+        name: name,
+        userType: currentUserType,
+        loginMethod: 'email',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + name,
+        verificationDocs: signupUploadedFiles.length > 0 ? JSON.stringify(signupUploadedFiles) : null
     };
+
+    const result = registerUser(userData);
     
-    showNotification('Account Created!', `Welcome to HamroCare, ${name}! (${userTypeNames[currentUserType]})`);
-    event.target.reset();
-    signupUploadedFiles = [];
-    document.getElementById('signupUploadedFiles').innerHTML = '';
-    backToUserTypeSelection();
+    if (result.success) {
+        showNotification('Success', result.message);
+        closeModal();
+        document.getElementById('signupFormElement').reset();
+        signupUploadedFiles = [];
+        document.getElementById('signupUploadedFiles').innerHTML = '';
+        backToUserTypeSelection();
+    } else {
+        showNotification('Error', result.message);
+    }
 }
 
 function handleGoogleSignup(response) {
+    // Check if database is initialized
+    if (!dbInitialized) {
+        showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
+        return;
+    }
+    
     googleUser = JSON.parse(atob(response.credential.split('.')[1]));
-    isLoggedIn = true;
-    const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
-    const signOutBtn = document.getElementById('signOutBtn');
-    userAvatar.src = googleUser.picture;
-    userIcon.style.display = 'none';
-    userAvatar.style.display = 'block';
-    signOutBtn.style.display = 'inline-block';
-    closeModal();
-    showNotification('Account Created!', `Welcome to HamroCare, ${googleUser.name}! (User)`);
-    document.getElementById('signupFormElement').reset();
-    signupUploadedFiles = [];
-    document.getElementById('signupUploadedFiles').innerHTML = '';
-    backToUserTypeSelection();
+    
+    const userData = {
+        email: googleUser.email,
+        password: null,
+        name: googleUser.name,
+        userType: 'user',
+        loginMethod: 'google',
+        googleId: googleUser.sub,
+        avatar: googleUser.picture,
+        verificationDocs: null
+    };
+
+    const result = registerUser(userData);
+    
+    if (result.success) {
+        showNotification('Success', result.message);
+        closeModal();
+        document.getElementById('signupFormElement').reset();
+        signupUploadedFiles = [];
+        document.getElementById('signupUploadedFiles').innerHTML = '';
+        backToUserTypeSelection();
+    } else {
+        showNotification('Error', result.message);
+    }
 }
 
 function handleGoogleLogin(response) {
+    // Check if database is initialized
+    if (!dbInitialized) {
+        showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
+        return;
+    }
+    
     googleUser = JSON.parse(atob(response.credential.split('.')[1]));
-    isLoggedIn = true;
-    const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
-    const signOutBtn = document.getElementById('signOutBtn');
-    userAvatar.src = googleUser.picture;
-    userIcon.style.display = 'none';
-    userAvatar.style.display = 'block';
-    signOutBtn.style.display = 'inline-block';
-    closeModal();
-    showNotification('Login Successful!', `Welcome back, ${googleUser.name}!`);
+    
+    const result = loginUser(googleUser.email, null);
+    
+    if (result.success) {
+        isLoggedIn = true;
+        const userIcon = document.getElementById('userIcon');
+        const userAvatar = document.getElementById('userAvatar');
+        const signOutBtn = document.getElementById('signOutBtn');
+        userAvatar.src = googleUser.picture;
+        userIcon.style.display = 'none';
+        userAvatar.style.display = 'block';
+        signOutBtn.style.display = 'inline-block';
+        closeModal();
+        showNotification('Login Successful!', `Welcome back, ${googleUser.name}!`);
+    } else {
+        showNotification('Login Failed', result.message);
+    }
 }
 
 function toggleUserMenu() {
@@ -493,7 +531,15 @@ document.addEventListener('click', function(event) {
     }
 });
 
-window.onload = function () {
+window.addEventListener('load', function() {
+    // Wait for database to be ready
+    const checkDbReady = setInterval(() => {
+        if (typeof dbInitialized !== 'undefined' && dbInitialized) {
+            clearInterval(checkDbReady);
+            console.log('Database ready, initializing app...');
+        }
+    }, 100);
+    
     google.accounts.id.initialize({
         client_id: "1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com",
         callback: handleGoogleLogin,
@@ -505,7 +551,6 @@ window.onload = function () {
     
     initMap();
     
-    // Sample testimonials
     testimonials = [
         {
             name: 'Anjali Sharma',
@@ -551,4 +596,4 @@ window.onload = function () {
         }
     ];
     renderTestimonials();
-};
+});

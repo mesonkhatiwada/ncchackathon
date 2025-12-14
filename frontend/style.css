@@ -179,19 +179,6 @@ nav {
     transition: all .3s;
 }
 
-.hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px,8px);
-}
-
-.hamburger.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px,-6px);
-}
-
-/* Hero Section */
 .hero {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -314,24 +301,6 @@ nav {
     overflow: hidden;
 }
 
-.cta-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,.3);
-    transform: translate(-50%,-50%);
-    transition: width .6s,height .6s;
-}
-
-.cta-btn:hover::before {
-    width: 300px;
-    height: 300px;
-}
-
 .cta-btn:hover {
     background: #22c55e;
     transform: scale(1.05);
@@ -350,7 +319,6 @@ nav {
     height: auto;
 }
 
-/* Why Us Section */
 .why-us-section {
     padding: 6rem 5%;
     background: #ffffff;
@@ -459,7 +427,6 @@ nav {
     line-height: 1.5;
 }
 
-/* Gallery Section */
 .gallery-section {
     padding: 6rem 5%;
     background: #f9fafb;
@@ -507,7 +474,6 @@ nav {
     transform: scale(1.05);
 }
 
-/* Image Lightbox */
 .lightbox-overlay {
     position: fixed;
     top: 0;
@@ -614,18 +580,6 @@ nav {
     font-size: .9rem;
 }
 
-@keyframes lightboxZoomIn {
-    from {
-        opacity: 0;
-        transform: scale(.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Map Section */
 .map-section {
     padding: 6rem 5%;
     background: #fff;
@@ -743,7 +697,6 @@ nav {
     font-size: 1.1rem;
 }
 
-/* Testimonials Section */
 .testimonials-section {
     padding: 6rem 5%;
     background: #fff;
@@ -900,7 +853,6 @@ nav {
     transform: scale(1.15);
 }
 
-/* Donation Section */
 .donation-section {
     padding: 6rem 5%;
     background: #f9fafb;
@@ -979,7 +931,6 @@ nav {
     transform: scale(1.05);
 }
 
-/* Footer */
 .footer {
     background: #1f2937;
     color: #fff;
@@ -1044,7 +995,6 @@ nav {
     color: #9ca3af;
 }
 
-/* Modal Styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1349,7 +1299,6 @@ nav {
     background: #e0e0e0;
 }
 
-/* Notification Toast */
 .notification-toast {
     position: fixed;
     top: 20px;
@@ -1398,7 +1347,6 @@ nav {
     word-wrap: break-word;
 }
 
-/* Map Info Popup */
 .location-popup {
     padding: 1rem;
 }
@@ -1443,7 +1391,6 @@ nav {
     transform: scale(1.05);
 }
 
-/* Responsive Design */
 @media(max-width:1024px) {
     .why-us-content {
         grid-template-columns: 1fr;
