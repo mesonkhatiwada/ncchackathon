@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HamroCare - Adopt a Pet</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            overflow-x: hidden;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .logo img {
+            height: 74px;
+            width: auto;
+            top: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: color .3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #4ade80;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .3s;
+            color: #4ade80;
+            font-size: 1.5rem;
+        }
+
+        .user-icon:hover {
+            background: #4ade80;
+            color: #fff;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            object-fit: cover;
+            display: none;
+        }
+
+        .sign-out-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-weight: 500;
+            cursor: pointer;
+            display: none;
+        }
+
+        .sign-out-btn:hover {
+            color: #4ade80;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 3px;
+            transition: all .3s;
+        }
+
+        .adoption-hero {
+            padding: 4rem 5% 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        }
+
+        .adoption-hero h1 {
+            font-size: 3.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .adoption-hero h1::after {
+            content: '.';
+            color: #4ade80;
+        }
+
+        .adoption-hero p {
+            color: #666;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .pets-grid {
+            padding: 2rem 5% 6rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .pet-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,.08);
+            transition: transform .3s, box-shadow .3s;
+            border: 1px solid rgba(74,222,128,.1);
+        }
+
+        .pet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,.12);
+        }
+
+        .pet-image {
+            width: 100%;
+            height: 280px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pet-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pet-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        }
+
+        .pet-badge.available {
+            color: #4ade80;
+        }
+
+        .pet-badge.in-process {
+            color: #fbbf24;
+        }
+
+        .pet-info {
+            padding: 1.8rem;
+        }
+
+        .pet-name {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .pet-breed {
+            color: #888;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .pet-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .shelter-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f0fdf4;
+            border-radius: 12px;
+            border-left: 4px solid #4ade80;
+        }
+
+        .shelter-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .shelter-name i {
+            color: #4ade80;
+        }
+
+        .shelter-contact {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .shelter-contact i {
+            color: #4ade80;
+            font-size: 0.9rem;
+        }
+
+        .adopt-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #4ade80;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .adopt-btn:hover:not(:disabled) {
+            background: #22c55e;
+        }
+
+        .adopt-btn.in-process {
+            background: #fbbf24;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .adopt-btn.in-process:hover::after {
+            content: 'This pet is currently in adoption process by another user';
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,.2);
+        }
+
+        .adopt-btn.in-process:hover::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #333;
+            z-index: 10;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #666;
+            transition: all .3s;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .modal-subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-toggle {
+            display: flex;
+            margin-bottom: 2rem;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .auth-toggle-btn {
+            flex: 1;
+            padding: 1rem;
+            background: #fff;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s;
+        }
+
+        .auth-toggle-btn.active {
+            background: #4ade80;
+            color: #fff;
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .signup-form {
+            display: none;
+        }
+
+        .signup-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: .5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: .8rem;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color .3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        .terms-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 2px solid #e5e5e5;
+        }
+
+        .terms-content h3 {
+            color: #4ade80;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .terms-content p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .terms-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .terms-content li {
+            color: #666;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .checkbox-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all .3s;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover {
+            background: #f0fdf4;
+            border-color: #4ade80;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #4ade80;
+            margin-top: 2px;
+        }
+
+        .checkbox-label {
+            color: #333;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #4ade80;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #22c55e;
+        }
+
+        .submit-btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e5e5;
+        }
+
+        .or-divider span {
+            padding: 0 1rem;
+            color: #666;
+        }
+
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform .3s ease;
+            border-left: 4px solid #4ade80;
+            max-width: 400px;
+        }
+
+        .notification-toast.show {
+            transform: translateX(0);
+        }
+
+        .notification-toast i {
+            font-size: 1.5rem;
+            color: #4ade80;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: .2rem;
+        }
+
+        .notification-message {
+            font-size: .9rem;
+            color: #666;
+        }
+
+        @media(max-width: 768px) {
+            .nav-right {
+                gap: 1rem;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: #fff;
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                transition: right .3s;
+                box-shadow: 0 5px 20px rgba(0,0,0,.1);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .adoption-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .pets-grid {
+                grid-template-columns: 1fr;
+                padding: 2rem 5% 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-toast" id="notificationToast">
+        <i class="ri-checkbox-circle-fill"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Success!</div>
+            <div class="notification-message" id="notificationMessage">Message</div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="HamroCare Logo"></a>
+        </div>
+        <div class="nav-right">
+            <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="adopt.html" class="active">Adopt</a></li>
+                <li><a href="index.html#why-us-section">About</a></li>
+                <li><a href="index.html#gallery-section">Gallery</a></li>
+                <li>
+                    <div class="user-icon" onclick="openModal()" id="userIcon">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    <img src="" alt="User" class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
+                    <button class="sign-out-btn" id="signOutBtn" onclick="handleSignOut()">Sign out</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="adoption-hero">
+        <h1>Find Your Perfect Companion</h1>
+        <p>Every pet deserves a loving home. Browse through our available pets and give them the family they've been waiting for.</p>
+    </section>
+
+
+
+    <section class="pets-grid" id="petsGrid"></section>
+
+    <div class="modal-overlay" id="adoptionModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeAdoptionModal()">
+                <i class="ri-close-line"></i>
+            </button>
+            <h2 class="modal-title">Adoption Agreement</h2>
+            
+            <div class="terms-content">
+                <h3>Terms and Conditions</h3>
+                <p><strong>Welcome to HamroCare Pet Adoption!</strong></p>
+                <p>Before proceeding with the adoption, please read and understand the following terms:</p>
+                
+                <ul>
+                    <li>You must be at least 18 years old to adopt a pet</li>
+                    <li>You agree to provide proper food, water, shelter, and veterinary care</li>
+                    <li>You will not abuse, neglect, or abandon the adopted pet</li>
+                    <li>You understand that pet ownership is a long-term commitment</li>
+                    <li>You agree to keep the pet in a safe and suitable environment</li>
+                    <li>You will comply with all local laws and regulations regarding pet ownership</li>
+                    <li>You agree to notify HamroCare if you can no longer care for the pet</li>
+                    <li>Home visits may be conducted to ensure the pet's wellbeing</li>
+                    <li>You will provide regular updates about the pet's health and happiness</li>
+                    <li>You understand that false information may result in adoption cancellation</li>
+                </ul>
+            </div>
+
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="termsCheckbox" onchange="validateForm()">
+                    <label for="termsCheckbox" class="checkbox-label">
+                        I have read and agree to all the Terms and Conditions stated above
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="careCheckbox" onchange="validateForm()">
+                    <label for="careCheckbox" class="checkbox-label">
+                        I commit to providing proper care, love, and attention to this pet for its entire life
+                    </label>
+                </div>
+            </div>
+
+            <button class="submit-btn" id="confirmAdoptBtn" onclick="confirmAdoption()" disabled>
+                Confirm Adoption
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ri-close-line"></i>
+            </button>
+
+            <div class="auth-toggle">
+                <button class="auth-toggle-btn active" id="loginToggle" onclick="showLogin()">Login</button>
+                <button class="auth-toggle-btn" id="signupToggle" onclick="showSignup()">Sign Up</button>
+            </div>
+
+            <div class="login-form active" id="loginForm">
+                <h2 class="modal-title">Welcome Back</h2>
+                <p class="modal-subtitle">Login to continue your journey</p>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Login</button>
+                    
+                    <div class="or-divider"><span>OR</span></div>
+                    
+                    <div id="g_id_onload"
+                         data-client_id="1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com"
+                         data-callback="handleGoogleLogin">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-size="large"
+                         data-theme="outline"
+                         data-text="sign_in_with"
+                         data-shape="rectangular"
+                         data-width="100%">
+                    </div>
+                </form>
+            </div>
+
+            <div class="signup-form" id="signupForm">
+                <h2 class="modal-title">Create Account</h2>
+                <p class="modal-subtitle">Sign up to adopt pets</p>
+                
+                <form onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="Create a password" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Create Account</button>
+                    
+                    <div class="or-divider"><span>OR</span></div>
+                    
+                    <div id="g_id_onload"
+                         data-client_id="1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com"
+                         data-callback="handleGoogleSignup">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-size="large"
+                         data-theme="outline"
+                         data-text="sign_up_with"
+                         data-shape="rectangular"
+                         data-width="100%">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pets = [
+            { id: 1, name: 'Kale', breed: 'Bhote Kukur', type: 'dog', age: '2 years', gender: 'Male', size: 'Large', shelter: 'Happy Paws Shelter', phone: '+977-9812345678', address: 'Thamel, Kathmandu', available: true },
+            { id: 2, name: 'Chyante', breed: 'Desi Biralo', type: 'cat', age: '1 year', gender: 'Female', size: 'Small', shelter: 'Feline Friends', phone: '+977-9823456789', address: 'Patan, Lalitpur', available: true },
+            { id: 3, name: 'Sheru', breed: 'Street Dog', type: 'dog', age: '3 years', gender: 'Male', size: 'Large', shelter: 'Safe Haven', phone: '+977-9834567890', address: 'Bouddha, Kathmandu', available: false },
+            { id: 4, name: 'Moti', breed: 'Pahade Kukur', type: 'dog', age: '1.5 years', gender: 'Female', size: 'Medium', shelter: 'Pawsitive Care', phone: '+977-9845678901', address: 'Sanepa, Lalitpur', available: true },
+            { id: 5, name: 'Miyau', breed: 'Local Cat', type: 'cat', age: '2 years', gender: 'Male', size: 'Small', shelter: 'Meow Mansion', phone: '+977-9856789012', address: 'Jhamsikhel, Lalitpur', available: true },
+            { id: 6, name: 'Bakreni', breed: 'Hill Goat', type: 'goat', age: '1 year', gender: 'Female', size: 'Medium', shelter: 'Farm Friends', phone: '+977-9867890123', address: 'Bhaktapur', available: true },
+            { id: 7, name: 'Popat', breed: 'Parrot', type: 'bird', age: '6 months', gender: 'Male', size: 'Small', shelter: 'Bird Paradise', phone: '+977-9878901234', address: 'Boudha, Kathmandu', available: false },
+            { id: 8, name: 'Bhalu', breed: 'Nepali Kukur', type: 'dog', age: '2.5 years', gender: 'Male', size: 'Large', shelter: 'Safe Haven', phone: '+977-9834567890', address: 'Bouddha, Kathmandu', available: true },
+            { id: 9, name: 'Lakhe', breed: 'Mountain Dog', type: 'dog', age: '1 year', gender: 'Female', size: 'Small', shelter: 'Pawsitive Care', phone: '+977-9845678901', address: 'Sanepa, Lalitpur', available: true },
+            { id: 10, name: 'Bheda', breed: 'Nepali Sheep', type: 'pig', age: '2 years', gender: 'Male', size: 'Medium', shelter: 'Farm Friends', phone: '+977-9867890123', address: 'Bhaktapur', available: true },
+            { id: 11, name: 'Junge', breed: 'Street Pup', type: 'dog', age: '3 years', gender: 'Male', size: 'Large', shelter: 'Happy Paws Shelter', phone: '+977-9812345678', address: 'Thamel, Kathmandu', available: false },
+            { id: 12, name: 'Rani', breed: 'White Cat', type: 'cat', age: '1.5 years', gender: 'Female', size: 'Small', shelter: 'Feline Friends', phone: '+977-9823456789', address: 'Patan, Lalitpur', available: true },
+            { id: 13, name: 'Bungur', breed: 'Local Pig', type: 'pig', age: '1 year', gender: 'Male', size: 'Medium', shelter: 'Farm Friends', phone: '+977-9867890123', address: 'Bhaktapur', available: true },
+            { id: 14, name: 'Chuchche', breed: 'Nepali Parrot', type: 'bird', age: '8 months', gender: 'Female', size: 'Small', shelter: 'Bird Paradise', phone: '+977-9878901234', address: 'Boudha, Kathmandu', available: true },
+            { id: 15, name: 'Kaalo', breed: 'Black Dog', type: 'dog', age: '2 years', gender: 'Male', size: 'Medium', shelter: 'Safe Haven', phone: '+977-9834567890', address: 'Bouddha, Kathmandu', available: true }
+        ];
+
+        let currentPet = null;
+
+        // Check login status from localStorage
+        function checkLoginStatus() {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('userIcon').style.display = 'none';
+                const avatar = document.getElementById('userAvatar');
+                avatar.style.display = 'block';
+                avatar.src = user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4ade80&color=fff`;
+                document.getElementById('signOutBtn').style.display = 'block';
+            }
+        }
+
+        function renderPets() {
+            const grid = document.getElementById('petsGrid');
+            grid.innerHTML = pets.map(pet => `
+                <div class="pet-card">
+                    <div class="pet-image">
+                        <img src="adopt/${pet.id}.png" alt="${pet.name}">
+                        <div class="pet-badge ${pet.available ? 'available' : 'in-process'}">
+                            ${pet.available ? 'Available' : 'In Process'}
+                        </div>
+                    </div>
+                    <div class="pet-info">
+                        <h3 class="pet-name">${pet.name}</h3>
+                        <p class="pet-breed">${pet.breed}</p>
+                        
+                        <div class="pet-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Age</div>
+                                <div class="detail-value">${pet.age}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Gender</div>
+                                <div class="detail-value">${pet.gender}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Size</div>
+                                <div class="detail-value">${pet.size}</div>
+                            </div>
+                        </div>
+
+                        <div class="shelter-info">
+                            <div class="shelter-name">
+                                <i class="ri-home-4-line"></i>
+                                ${pet.shelter}
+                            </div>
+                            <div class="shelter-contact">
+                                <i class="ri-phone-line"></i>
+                                ${pet.phone}
+                            </div>
+                            <div class="shelter-contact">
+                                <i class="ri-map-pin-line"></i>
+                                ${pet.address}
+                            </div>
+                        </div>
+
+                        <button class="adopt-btn ${pet.available ? '' : 'in-process'}" 
+                                onclick="handleAdopt(${pet.id})" 
+                                ${!pet.available ? 'disabled' : ''}>
+                            <i class="ri-heart-fill"></i>
+                            ${pet.available ? 'Adopt Me' : 'In Process'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAdopt(petId) {
+            const userData = localStorage.getItem('userData');
+            if (!userData) {
+                openModal();
+                showNotification('Login Required', 'Please log in to adopt a pet');
+                return;
+            }
+            currentPet = pets.find(p => p.id === petId);
+            document.getElementById('adoptionModal').classList.add('active');
+        }
+
+        function closeAdoptionModal() {
+            document.getElementById('adoptionModal').classList.remove('active');
+            document.getElementById('termsCheckbox').checked = false;
+            document.getElementById('careCheckbox').checked = false;
+            validateForm();
+        }
+
+        function validateForm() {
+            const terms = document.getElementById('termsCheckbox').checked;
+            const care = document.getElementById('careCheckbox').checked;
+            document.getElementById('confirmAdoptBtn').disabled = !(terms && care);
+        }
+
+        function confirmAdoption() {
+            if (currentPet) {
+                currentPet.available = false;
+                showNotification('Success!', `Your adoption request for ${currentPet.name} has been submitted. We'll contact you soon!`);
+                closeAdoptionModal();
+                renderPets();
+            }
+        }
+
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+            document.getElementById('hamburger').classList.toggle('active');
+        }
+
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target.id === 'modalOverlay') {
+                closeModal();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginToggle').classList.add('active');
+            document.getElementById('signupToggle').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+        }
+
+        function showSignup() {
+            document.getElementById('loginToggle').classList.remove('active');
+            document.getElementById('signupToggle').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('signupForm').classList.add('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = {
+                name: 'User',
+                email: event.target[0].value,
+                picture: `https://ui-avatars.com/api/?name=User&background=4ade80&color=fff`
+            };
+            localStorage.setItem('userData', JSON.stringify(user));
+            
+            document.getElementById('userIcon').style.display = 'none';
+            const avatar = document.getElementById('userAvatar');
+            avatar.style.display = 'block';
+            avatar.src = user.picture;
+            document.getElementById('signOutBtn').style.display = 'block';
+            
+            closeModal();
+            showNotification('Welcome!', 'Successfully logged in');
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const user = {
+                name: event.target[0].value,
+                email: event.target[1].value,
+                picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(event.target[0].value)}&background=4ade80&color=fff`
+            };
+            localStorage.setItem('userData', JSON.stringify(user));
+            
+            document.getElementById('userIcon').style.display = 'none';
+            const avatar = document.getElementById('userAvatar');
+            avatar.style.display = 'block';
+            avatar.src = user.picture;
+            document.getElementById('signOutBtn').style.display = 'block';
+            
+            closeModal();
+            showNotification('Welcome!', 'Account created successfully');
+        }
+
+        function handleGoogleLogin(response) {
+            const userData = parseJwt(response.credential);
+            const user = {
+                name: userData.name,
+                email: userData.email,
+                picture: userData.picture
+            };
+            localStorage.setItem('userData', JSON.stringify(user));
+            
+            document.getElementById('userIcon').style.display = 'none';
+            const avatar = document.getElementById('userAvatar');
+            avatar.style.display = 'block';
+            avatar.src = user.picture;
+            document.getElementById('signOutBtn').style.display = 'block';
+            
+            closeModal();
+            showNotification('Welcome!', `Logged in as ${user.name}`);
+        }
+
+        function handleGoogleSignup(response) {
+            handleGoogleLogin(response);
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function handleSignOut() {
+            localStorage.removeItem('userData');
+            document.getElementById('userIcon').style.display = 'flex';
+            document.getElementById('userAvatar').style.display = 'none';
+            document.getElementById('signOutBtn').style.display = 'none';
+            showNotification('Signed Out', 'You have been signed out successfully');
+        }
+
+        function toggleUserMenu() {
+            const signOutBtn = document.getElementById('signOutBtn');
+            signOutBtn.style.display = signOutBtn.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showNotification(title, message) {
+            const toast = document.getElementById('notificationToast');
+            document.getElementById('notificationTitle').textContent = title;
+            document.getElementById('notificationMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        // Initialize
+        checkLoginStatus();
+        renderPets();
+    </script>
+</body>
+</html>
