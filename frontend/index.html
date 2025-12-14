@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HamroCare</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="notification-toast" id="notificationToast">
+        <i class="ri-checkbox-circle-fill"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Success!</div>
+            <div class="notification-message" id="notificationMessage">Successfully logged in</div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="logo">
+            <a href="#home-section"><img src="images/logo.png" alt="HamroCare Logo"></a>
+        </div>
+        <div class="nav-right">
+            <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home-section" class="active" onclick="closeMenu(); scrollToSection('home-section')">Home</a></li>
+                <li class="dropdown" id="categoryDropdown">
+                    <div class="dropdown-toggle" onclick="toggleDropdown()">
+                        Category <i class="ri-arrow-down-s-line"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item" onclick="handleCategoryClick('rescue')">
+                            <i class="ri-heart-pulse-line"></i>
+                            <span>Rescue</span>
+                        </div>
+                        <div class="dropdown-item" onclick="handleCategoryClick('donate')">
+                            <i class="ri-hand-heart-line"></i>
+                            <span>Donate</span>
+                        </div>
+                        <div class="dropdown-item" onclick="handleCategoryClick('adopt')">
+                            <i class="ri-home-heart-line"></i>
+                            <span>Adopt</span>
+                        </div>
+                        <div class="dropdown-item" onclick="handleCategoryClick('report')">
+                            <i class="ri-alarm-warning-line"></i>
+                            <span>Report</span>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#why-us-section" onclick="closeMenu(); scrollToSection('why-us-section')">About</a></li>
+                <li><a href="#gallery-section" onclick="closeMenu(); scrollToSection('gallery-section')">Gallery</a></li>
+                <li>
+                    <div class="user-icon" onclick="openModal()" id="userIcon">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    <img src="" alt="User" class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
+                    <button class="sign-out-btn" id="signOutBtn" onclick="handleSignOut()">Sign out</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero" id="home-section">
+        <i class="ri-paw-print-fill decorative-paw paw-1"></i>
+        <i class="ri-paw-print-fill decorative-paw paw-2"></i>
+        <div class="decorative-dots dots-1"></div>
+        <div class="decorative-dots dots-2"></div>
+        <div class="decorative-line line-1"></div>
+        <div class="decorative-line line-2"></div>
+        
+        <div class="hero-content">
+            <h1>Hi Human.<br>You need <span class="highlight">Friends</span>?</h1>
+            <p>From adoption to donations and rescue reports, everything starts here. We help you pick the right pet and support animals that need care.</p>
+            <p class="partnership-text">In partnership with <a href="https://bloodconnectbydevspirit.netlify.app" target="_blank" class="partnership-link">Blood Connect</a></p>
+            <button class="cta-btn" onclick="openModal()">Get Started</button>
+        </div>
+        <div class="hero-image">
+            <img src="images/landing.png" alt="Pet">
+        </div>
+    </section>
+
+    <section class="why-us-section" id="why-us-section">
+        <div class="section-header">
+            <h2 class="section-title">Why Choose Us</h2>
+            <p class="section-subtitle">Discover what makes HamroCare the perfect choice for pet adoption and animal welfare</p>
+        </div>
+        
+        <div class="why-us-content">
+            <div class="why-us-banner-container">
+                <img src="images/us.png" alt="Why Choose HamroCare" class="why-us-banner">
+            </div>
+            
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="ri-home-heart-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Adoption Hub</h3>
+                        <p>Find your perfect furry companion</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="ri-hand-heart-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Donation Portal</h3>
+                        <p>Support shelters & sponsored pets</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="ri-heart-pulse-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Rescue System</h3>
+                        <p>Emergency response & reporting network</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="ri-gamepad-line"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Gamified Experience</h3>
+                        <p>Engaging rewards system</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Past Events Gallery -->
+    <section class="gallery-section" id="gallery-section">
+        <div class="section-header">
+            <h2 class="section-title">Past Event Gallery</h2>
+            <p class="section-subtitle">Celebrating our journey of rescue, care, and community impact</p>
+        </div>
+        
+        <div class="gallery-grid">
+            <div class="gallery-item" onclick="openLightbox(0)">
+                <img src="gallery/1.png" alt="Event 1">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(1)">
+                <img src="gallery/2.png" alt="Event 2">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(2)">
+                <img src="gallery/3.png" alt="Event 3">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(3)">
+                <img src="gallery/4.png" alt="Event 4">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(4)">
+                <img src="gallery/5.png" alt="Event 5">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(5)">
+                <img src="gallery/6.png" alt="Event 6">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(6)">
+                <img src="gallery/7.png" alt="Event 7">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(7)">
+                <img src="gallery/8.png" alt="Event 8">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(8)">
+                <img src="gallery/9.png" alt="Event 9">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(9)">
+                <img src="gallery/10.png" alt="Event 10">
+            </div>
+            <div class="gallery-item" onclick="openLightbox(10)">
+                <img src="gallery/11.png" alt="Event 11">
+            </div>
+            <div class="gallery-item more" onclick="scrollToSection('gallery-section')">
+                <i class="ri-add-line"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Rescue Map -->
+    <section class="map-section" id="map-section">
+        <div class="section-header">
+            <h2 class="section-title">Live Rescue Map</h2>
+            <p class="section-subtitle">Real-time locations for adoption centers, rescue operations, and emergency services</p>
+        </div>
+        
+        <div class="map-container">
+            <div class="map-wrapper">
+                <div class="map-controls" id="mapControls">
+                    <div class="map-controls-header" onclick="toggleMapControls()">
+                        <h3><i class="ri-filter-line"></i> Filter Index</h3>
+                        <i class="ri-arrow-down-s-line"></i>
+                    </div>
+                    <div class="map-filters">
+                        <button class="map-filter-btn active" data-filter="all" onclick="filterMap('all')">
+                            <i class="ri-map-pin-line"></i> Show All
+                        </button>
+                        <button class="map-filter-btn" data-filter="adoption" onclick="filterMap('adoption')">
+                            <i class="ri-home-heart-line"></i> Adoption
+                        </button>
+                        <button class="map-filter-btn" data-filter="danger" onclick="filterMap('danger')">
+                            <i class="ri-alarm-warning-line"></i> In Danger
+                        </button>
+                        <button class="map-filter-btn" data-filter="event" onclick="filterMap('event')">
+                            <i class="ri-syringe-line"></i> Free Injection
+                        </button>
+                        <button class="map-filter-btn" data-filter="ngo" onclick="filterMap('ngo')">
+                            <i class="ri-building-line"></i> NGO/INGO
+                        </button>
+                        <button class="map-filter-btn" data-filter="shelter" onclick="filterMap('shelter')">
+                            <i class="ri-home-4-line"></i> Shelters
+                        </button>
+                        <button class="map-filter-btn" data-filter="vet" onclick="filterMap('vet')">
+                            <i class="ri-heart-add-line"></i> Veterinary
+                        </button>
+                    </div>
+                </div>
+                <div id="rescueMap"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Testimonials -->
+    <section class="testimonials-section" id="testimonials-section">
+        <div class="section-header">
+            <h2 class="section-title">User Testimonials</h2>
+            <p class="section-subtitle">Hear what our community has to say about their experience with HamroCare</p>
+        </div>
+        
+        <div class="testimonials-grid" id="testimonialsGrid"></div>
+        
+        <div class="testimonial-form">
+            <h3 style="text-align:center;margin-bottom:1rem;color:#333">Share Your Experience</h3>
+            <p style="text-align:center;color:#666;margin-bottom:2rem">Tell us about your journey with HamroCare</p>
+            
+            <form onsubmit="submitTestimonial(event)">
+                <div class="rating-input" id="ratingInput">
+                    <i class="ri-star-fill" onclick="setRating(1)"></i>
+                    <i class="ri-star-fill" onclick="setRating(2)"></i>
+                    <i class="ri-star-fill" onclick="setRating(3)"></i>
+                    <i class="ri-star-fill" onclick="setRating(4)"></i>
+                    <i class="ri-star-fill" onclick="setRating(5)"></i>
+                </div>
+                <textarea placeholder="Share your experience..." id="testimonialText" required></textarea>
+                <button type="submit" class="submit-btn" style="margin-top:1rem">Post Review</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Donation Section -->
+    <section class="donation-section" id="donation-section">
+        <div class="donation-content">
+            <div class="donation-image">
+                <img src="images/donation.png" alt="Support Our Cause">
+            </div>
+            
+            <div class="donation-text">
+                <h2>Help Us Save More Lives</h2>
+                <p>Your generous contribution enables us to rescue, rehabilitate, and rehome animals in need. Every donation makes a real difference in providing medical care, shelter, and love to vulnerable animals across Nepal.</p>
+                
+                <div class="donation-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">2,450+</div>
+                        <div class="stat-label">Animals Rescued</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1,800+</div>
+                        <div class="stat-label">Successful Adoptions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Partner Shelters</div>
+                    </div>
+                </div>
+                
+                <button class="donate-btn" onclick="showNotification('Donate', 'Donation portal coming soon!')">
+                    <i class="ri-heart-fill" style="margin-right:8px"></i>
+                    Donate Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="images/footer.png" alt="HamroCare">
+                <p>Dedicated to creating a world where every animal has a loving home and proper care. Join us in our mission to make a difference.</p>
+            </div>
+            
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home-section" onclick="scrollToSection('home-section')">Home</a></li>
+                        <li><a href="#why-us-section" onclick="scrollToSection('why-us-section')">About Us</a></li>
+                        <li><a href="#gallery-section" onclick="scrollToSection('gallery-section')">Gallery</a></li>
+                        <li><a href="#testimonials-section" onclick="scrollToSection('testimonials-section')">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#" onclick="handleCategoryClick('adopt')">Adopt a Pet</a></li>
+                        <li><a href="#" onclick="handleCategoryClick('rescue')">Rescue Support</a></li>
+                        <li><a href="#donation-section" onclick="scrollToSection('donation-section')">Donate</a></li>
+                        <li><a href="#" onclick="handleCategoryClick('report')">Report Animal</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Connect</h3>
+                    <ul>
+                        <li><a href="https://wa.me/9762639337" target="_blank"><i class="ri-whatsapp-line"></i> WhatsApp</a></li>
+                        <li><a href="#"><i class="ri-facebook-fill"></i> Facebook</a></li>
+                        <li><a href="#"><i class="ri-instagram-line"></i> Instagram</a></li>
+                        <li><a href="https://bloodconnectbydevspirit.netlify.app" target="_blank"><i class="ri-links-line"></i> Blood Connect</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 HamroCare. All rights reserved. Made with <i class="ri-heart-fill" style="color:#4ade80"></i> for animals</p>
+        </div>
+    </footer>
+
+    <!-- Image Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightboxOnOverlay(event)">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">
+                <i class="ri-close-line"></i>
+            </button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
+            <img src="" alt="Gallery Image" id="lightboxImage">
+            <div class="lightbox-counter" id="lightboxCounter">1 / 11</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ri-close-line"></i>
+            </button>
+
+            <div class="auth-toggle">
+                <button class="auth-toggle-btn active" id="loginToggle" onclick="showLogin()">Login</button>
+                <button class="auth-toggle-btn" id="signupToggle" onclick="showSignup()">Sign Up</button>
+            </div>
+
+            <div class="login-form active" id="loginForm">
+                <h2 class="modal-title">Welcome Back</h2>
+                <p class="modal-subtitle">Login to continue your journey</p>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Login</button>
+                    
+                    <div class="or-divider"><span>OR</span></div>
+                    
+                    <div id="g_id_onload"
+                         data-client_id="1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com"
+                         data-callback="handleGoogleLogin">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-size="large"
+                         data-theme="outline"
+                         data-text="sign_in_with"
+                         data-shape="rectangular"
+                         data-width="100%">
+                    </div>
+                </form>
+            </div>
+
+            <div class="signup-form" id="signupForm">
+                <h2 class="modal-title">Create Account</h2>
+                <p class="modal-subtitle">Choose your account type to get started</p>
+                
+                <div class="user-type-grid">
+                    <div class="user-type-card" onclick="selectUserType('user')">
+                        <i class="ri-user-heart-line"></i>
+                        <h3>User</h3>
+                        <p>Adopt or rescue pets</p>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('ngo')">
+                        <i class="ri-building-line"></i>
+                        <h3>NGO's/INGO's</h3>
+                        <p>Organization account</p>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('shelter')">
+                        <i class="ri-home-4-line"></i>
+                        <h3>Shelter</h3>
+                        <p>Pet shelter facility</p>
+                    </div>
+                    <div class="user-type-card" onclick="selectUserType('veterinary')">
+                        <i class="ri-heart-add-line"></i>
+                        <h3>Veterinary</h3>
+                        <p>Medical professional</p>
+                    </div>
+                </div>
+
+                <form id="signupFormElement" onsubmit="handleSignup(event)" style="display:none;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signupName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                    </div>
+
+                    <div class="form-group file-upload" id="signupVerificationUpload" style="display: none;" onclick="document.getElementById('signupFileInput').click()">
+                        <i class="ri-file-upload-line"></i>
+                        <p><strong>Upload Verification Documents</strong></p>
+                        <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">
+                            Click to upload registration papers, certificates, or official documents
+                        </p>
+                        <input type="file" id="signupFileInput" accept="image/*,.pdf" multiple onchange="handleSignupFileUpload(event)">
+                        <div class="uploaded-files" id="signupUploadedFiles"></div>
+                    </div>
+
+                    <div id="googleSignupSection" style="display:none;">
+                        <div class="or-divider"><span>OR</span></div>
+                        <div id="g_id_onload"
+                             data-client_id="1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignup">
+                        </div>
+                        <div class="g_id_signin"
+                             data-type="standard"
+                             data-size="large"
+                             data-theme="outline"
+                             data-text="sign_up_with"
+                             data-shape="rectangular"
+                             data-width="100%">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Create Account</button>
+                    
+                    <button type="button" class="submit-btn back-btn-modal" onclick="backToUserTypeSelection()">
+                        <i class="ri-arrow-left-line"></i> Back
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
