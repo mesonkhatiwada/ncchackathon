@@ -1,6 +1,5 @@
 let currentUser = null;
 
-
 function checkSession() {
     const session = sessionStorage.getItem('hamrocare_session');
     if (!session) {
@@ -25,7 +24,6 @@ function checkSession() {
     }
 }
 
-
 function loadUserProfile() {
     if (!currentUser || !dbInitialized) return;
     
@@ -33,17 +31,15 @@ function loadUserProfile() {
     if (profile) {
         currentUser = { ...currentUser, ...profile };
         
-        
         document.getElementById('headerAvatar').src = currentUser.avatar;
         document.getElementById('headerName').textContent = currentUser.name;
         document.getElementById('headerEmail').textContent = currentUser.email;
         
-        
-        document.getElementById('totalDonations').textContent = `Rs. ${currentUser.donationsTotal || 0}`;
+        const donationAmount = currentUser.donationsTotal || 0;
+        document.getElementById('totalDonations').textContent = `Rs. ${donationAmount.toLocaleString()}`;
         document.getElementById('itemsDonated').textContent = currentUser.itemsDonated || 0;
         document.getElementById('animalsRescued').textContent = currentUser.animalsRescued || 0;
         
-       
         document.getElementById('profileAvatar').src = currentUser.avatar;
         document.getElementById('profileName').textContent = currentUser.name;
         document.getElementById('profileEmail').textContent = currentUser.email;
@@ -53,62 +49,81 @@ function loadUserProfile() {
         document.getElementById('editEmail').value = currentUser.email;
         document.getElementById('editPhone').value = currentUser.phoneNumber || '';
         
-       
-        document.getElementById('donationTotal').textContent = `Rs. ${currentUser.donationsTotal || 0}`;
+        document.getElementById('donationTotal').textContent = `Rs. ${donationAmount.toLocaleString()}`;
         document.getElementById('donationItems').textContent = currentUser.itemsDonated || 0;
-        document.getElementById('donationCount').textContent = '0'; // Will be updated with real data
-        
+        document.getElementById('donationCount').textContent = currentUser.donationCount || 0;
         
         document.getElementById('rescueTotal').textContent = currentUser.animalsRescued || 0;
-        document.getElementById('rescuePending').textContent = '0'; // Will be updated with real data
-        document.getElementById('rescueCompleted').textContent = currentUser.animalsRescued || 0;
-        
-        
-        document.getElementById('dropdownAvatar').src = currentUser.avatar;
-        document.getElementById('dropdownName').textContent = currentUser.name;
-        document.getElementById('dropdownEmail').textContent = currentUser.email;
-        
+        document.getElementById('rescuePending').textContent = currentUser.rescuePending || 0;
+        document.getElementById('rescueCompleted').textContent = currentUser.rescueCompleted || 0;
         
         updateBadges();
+        loadRecentActivity();
     }
 }
 
-// Update badges based on achievements
+function loadRecentActivity() {
+    const activityList = document.getElementById('activityList');
+    const activities = getUserActivities(currentUser.id);
+    
+    if (!activities || activities.length === 0) {
+        activityList.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="ri-information-line"></i>
+                </div>
+                <div class="activity-info">
+                    <p>No recent activity</p>
+                    <span>Start by making a donation or rescue report</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    activityList.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+            <div class="activity-icon">
+                <i class="${activity.icon}"></i>
+            </div>
+            <div class="activity-info">
+                <p>${activity.title}</p>
+                <span>${activity.description} • ${activity.time}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
 function updateBadges() {
     const donations = currentUser.donationsTotal || 0;
     const rescued = currentUser.animalsRescued || 0;
     
     let badgesEarned = 0;
     
-    // First Donation Badge
     if (donations > 0) {
         unlockBadge('badge-first-donation');
         badgesEarned++;
     }
     updateBadgeProgress('badge-first-donation', donations > 0 ? 100 : 0);
     
-    // Generous Giver Badge
     if (donations >= 5000) {
         unlockBadge('badge-generous-giver');
         badgesEarned++;
     }
     updateBadgeProgress('badge-generous-giver', Math.min((donations / 5000) * 100, 100));
     
-    // Life Saver Badge
     if (rescued >= 5) {
         unlockBadge('badge-life-saver');
         badgesEarned++;
     }
     updateBadgeProgress('badge-life-saver', Math.min((rescued / 5) * 100, 100));
     
-    // Hero Badge
     if (rescued >= 10) {
         unlockBadge('badge-hero');
         badgesEarned++;
     }
     updateBadgeProgress('badge-hero', Math.min((rescued / 10) * 100, 100));
     
-    // Champion Badge
     if (donations >= 10000) {
         unlockBadge('badge-champion');
         badgesEarned++;
@@ -136,24 +151,19 @@ function updateBadgeProgress(badgeId, percentage) {
     }
 }
 
-
 function showSection(sectionId) {
     event.preventDefault();
-    
     
     document.querySelectorAll('.dashboard-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    
     document.getElementById(sectionId).classList.add('active');
-    
     
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     event.currentTarget.classList.add('active');
-    
     
     const titles = {
         'overview': 'Dashboard Overview',
@@ -165,7 +175,6 @@ function showSection(sectionId) {
     document.getElementById('sectionTitle').textContent = titles[sectionId] || 'Dashboard';
 }
 
-// Handle avatar change
 function handleAvatarChange(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -180,8 +189,6 @@ function handleAvatarChange(event) {
             currentUser.avatar = newAvatar;
             document.getElementById('profileAvatar').src = newAvatar;
             document.getElementById('headerAvatar').src = newAvatar;
-            document.getElementById('dropdownAvatar').src = newAvatar;
-            
             
             const session = JSON.parse(sessionStorage.getItem('hamrocare_session'));
             session.user.avatar = newAvatar;
@@ -195,7 +202,6 @@ function handleAvatarChange(event) {
     reader.readAsDataURL(file);
 }
 
-// Handle profile update
 function handleProfileUpdate(event) {
     event.preventDefault();
     
@@ -229,23 +235,18 @@ function handleProfileUpdate(event) {
         currentUser.name = name;
         currentUser.phoneNumber = phone;
         
-        
         const session = JSON.parse(sessionStorage.getItem('hamrocare_session'));
         session.user.name = name;
         session.user.phoneNumber = phone;
         sessionStorage.setItem('hamrocare_session', JSON.stringify(session));
         
-        
         document.getElementById('headerName').textContent = name;
         document.getElementById('profileName').textContent = name;
-        document.getElementById('dropdownName').textContent = name;
-        
         
         document.getElementById('editPassword').value = '';
         document.getElementById('editConfirmPassword').value = '';
         
         showNotification('Success', 'Profile updated successfully');
-        
         
         if (phone && phone !== currentUser.phoneNumber) {
             sendSMSNotification(phone);
@@ -255,9 +256,7 @@ function handleProfileUpdate(event) {
     }
 }
 
-
 async function sendSMSNotification(phoneNumber) {
-    
     console.log('Sending SMS to:', phoneNumber);
     
     try {
@@ -277,21 +276,17 @@ async function sendSMSNotification(phoneNumber) {
         }
     } catch (error) {
         console.error('SMS sending failed:', error);
-        
     }
 }
-
 
 function handleLogout() {
     sessionStorage.removeItem('hamrocare_session');
     window.location.href = 'index.html';
 }
 
-
 function toggleSidebar() {
     document.querySelector('.dashboard-sidebar').classList.toggle('active');
 }
-
 
 function showNotification(title, message) {
     const toast = document.getElementById('notificationToast');
@@ -306,10 +301,8 @@ function showNotification(title, message) {
     }
 }
 
-
 window.addEventListener('load', function() {
     if (!checkSession()) return;
-    
     
     const checkDbReady = setInterval(() => {
         if (typeof dbInitialized !== 'undefined' && dbInitialized) {

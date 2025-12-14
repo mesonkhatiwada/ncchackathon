@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGO Dashboard - HamroCare</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://sql.js.org/dist/sql-wasm.js"></script>
+    <script src="database.js"></script>
+    <link rel="stylesheet" href="ngodashboard.css">
+</head>
+<body>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="ri-shield-star-line"></i>
+                </div>
+                <h2>NGO Dashboard Access</h2>
+                <p>Enter your approved credentials</p>
+            </div>
+            <form class="login-form" onsubmit="handleNGOLogin(event)">
+                <div class="form-group">
+                    <label><i class="ri-mail-line"></i> Email Address</label>
+                    <input type="email" id="ngoEmail" required placeholder="Enter your NGO email">
+                </div>
+                <div class="form-group">
+                    <label><i class="ri-lock-line"></i> Password</label>
+                    <input type="password" id="ngoPassword" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="ri-login-box-line"></i> Access Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardContainer" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="HamroCare" class="logo">
+                <h2>NGO Dashboard</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="showView('overview')">
+                    <i class="ri-dashboard-line"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showView('rescues')">
+                    <i class="ri-heart-pulse-line"></i>
+                    <span>Rescue Reports</span>
+                    <span class="badge" id="pendingBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showView('completed')">
+                    <i class="ri-check-double-line"></i>
+                    <span>Completed</span>
+                </a>
+                <a href="index.html" class="nav-item">
+                    <i class="ri-home-line"></i>
+                    <span>Back to Home</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="handleNGOLogout()">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1 id="viewTitle">Dashboard Overview</h1>
+                <div class="ngo-info" id="ngoInfo">
+                    <i class="ri-shield-check-fill"></i>
+                    <span id="ngoName">NGO Admin</span>
+                </div>
+            </header>
+
+            <div class="view-content">
+                <section class="view active" id="overview">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626)">
+                                <i class="ri-alarm-warning-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="criticalCount">0</h3>
+                                <p>Critical Cases</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
+                                <i class="ri-time-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="pendingCount">0</h3>
+                                <p>Pending Reports</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a)">
+                                <i class="ri-check-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="completedCount">0</h3>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb)">
+                                <i class="ri-heart-pulse-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalCount">0</h3>
+                                <p>Total Reports</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-reports">
+                        <h2><i class="ri-file-list-line"></i> Recent Rescue Reports</h2>
+                        <div class="reports-list" id="recentReportsList"></div>
+                    </div>
+                </section>
+
+                <section class="view" id="rescues">
+                    <div class="filters">
+                        <select id="statusFilter" onchange="filterReports()">
+                            <option value="all">All Status</option>
+                            <option value="pending" selected>Pending</option>
+                            <option value="in-progress">In Progress</option>
+                        </select>
+                        
+                        <select id="emergencyFilter" onchange="filterReports()">
+                            <option value="all">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        
+                        <select id="animalFilter" onchange="filterReports()">
+                            <option value="all">All Animals</option>
+                            <option value="dog">Dog</option>
+                            <option value="cat">Cat</option>
+                            <option value="bird">Bird</option>
+                            <option value="cow">Cow</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="reports-grid" id="rescueReportsGrid"></div>
+                </section>
+
+                <section class="view" id="completed">
+                    <div class="reports-grid" id="completedReportsGrid"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div class="report-modal" id="reportModal">
+        <div class="modal-content-large">
+            <button class="close-modal" onclick="closeReportModal()">
+                <i class="ri-close-line"></i>
+            </button>
+            
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="notification-toast" id="notificationToast">
+        <i class="ri-checkbox-circle-fill"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Success!</div>
+            <div class="notification-message" id="notificationMessage">Action completed</div>
+        </div>
+    </div>
+
+    <script src="ngodashboard.js"></script>
+</body>
+</html>

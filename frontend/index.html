@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HamroCare</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css " rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css " />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js "></script>
-    <script src="https://accounts.google.com/gsi/client " async defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://sql.js.org/dist/sql-wasm.js"></script>
-    <script src="database.js"></script> <!-- Load this FIRST -->
+    <script src="database.js"></script>
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -64,12 +64,32 @@
                 <li><a href="#why-us-section" onclick="closeMenu(); scrollToSection('why-us-section')">About</a></li>
                 <li><a href="#gallery-section" onclick="closeMenu(); scrollToSection('gallery-section')">Gallery</a>
                 </li>
-                <li>
+                <li class="user-menu-container">
                     <div class="user-icon" onclick="openModal()" id="userIcon">
                         <i class="ri-user-line"></i>
                     </div>
-                    <img src="" alt="User" class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
-                    <button class="sign-out-btn" id="signOutBtn" onclick="handleSignOut()">Sign out</button>
+                    <div class="user-avatar-wrapper">
+                        <img src="" alt="User" class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="dropdown-header">
+                                <img src="" alt="User" id="dropdownAvatar" class="dropdown-avatar">
+                                <div class="dropdown-user-info">
+                                    <h4 id="dropdownName">User Name</h4>
+                                    <p id="dropdownEmail">user@email.com</p>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="dashboard.html" class="dropdown-item-link">
+                                <i class="ri-dashboard-line"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item-link logout" onclick="handleSignOut()">
+                                <i class="ri-logout-box-line"></i>
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -87,7 +107,7 @@
             <h1>Hi Human.<br>You need <span class="highlight">Friends</span>?</h1>
             <p>From adoption to donations and rescue reports, everything starts here. We help you pick the right pet and
                 support animals that need care.</p>
-            <p class="partnership-text">In partnership with <a href="https://bloodconnectbydevspirit.netlify.app "
+            <p class="partnership-text">In partnership with <a href="https://bloodconnectbydevspirit.netlify.app"
                     target="_blank" class="partnership-link">Blood Connect</a></p>
             <button class="cta-btn" onclick="openModal()">Get Started</button>
         </div>
@@ -152,7 +172,6 @@
         </div>
     </section>
 
-    <!-- Past Events Gallery -->
     <section class="gallery-section" id="gallery-section">
         <div class="section-header">
             <h2 class="section-title">Past Event Gallery</h2>
@@ -199,7 +218,6 @@
         </div>
     </section>
 
-    <!-- Live Rescue Map -->
     <section class="map-section" id="map-section">
         <div class="section-header">
             <h2 class="section-title">Live Rescue Map</h2>
@@ -243,7 +261,6 @@
         </div>
     </section>
 
-    <!-- User Testimonials -->
     <section class="testimonials-section" id="testimonials-section">
         <div class="section-header">
             <h2 class="section-title">User Testimonials</h2>
@@ -270,7 +287,6 @@
         </div>
     </section>
 
-    <!-- Donation Section -->
     <section class="donation-section" id="donation-section">
         <div class="donation-content">
             <div class="donation-image">
@@ -306,7 +322,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
@@ -340,11 +355,11 @@
                 <div class="footer-column">
                     <h3>Connect</h3>
                     <ul>
-                        <li><a href="https://wa.me/9762639337 " target="_blank"><i class="ri-whatsapp-line"></i>
+                        <li><a href="https://wa.me/9762639337" target="_blank"><i class="ri-whatsapp-line"></i>
                                 WhatsApp</a></li>
                         <li><a href="#"><i class="ri-facebook-fill"></i> Facebook</a></li>
                         <li><a href="#"><i class="ri-instagram-line"></i> Instagram</a></li>
-                        <li><a href="https://bloodconnectbydevspirit.netlify.app " target="_blank"><i
+                        <li><a href="https://bloodconnectbydevspirit.netlify.app" target="_blank"><i
                                     class="ri-links-line"></i> Blood Connect</a></li>
                     </ul>
                 </div>
@@ -357,7 +372,6 @@
         </div>
     </footer>
 
-    <!-- Image Lightbox -->
     <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightboxOnOverlay(event)">
         <div class="lightbox-content" onclick="event.stopPropagation()">
             <button class="lightbox-close" onclick="closeLightbox()">

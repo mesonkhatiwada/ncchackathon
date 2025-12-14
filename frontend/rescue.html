@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rescue Report - HamroCare</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://sql.js.org/dist/sql-wasm.js"></script>
+    <script src="database.js"></script>
+    <link rel="stylesheet" href="rescue.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="images/logo.png" alt="HamroCare" class="logo">
+                <h1>HamroCare</h1>
+            </div>
+            <div class="nav-links">
+                <a href="index.html"><i class="ri-home-line"></i> Home</a>
+                <a href="dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="rescue-container">
+        <div class="rescue-header">
+            <div class="header-icon">
+                <i class="ri-heart-pulse-line"></i>
+            </div>
+            <h1>Report Animal Rescue</h1>
+            <p>Help us save animals in need. Your report makes a difference.</p>
+        </div>
+
+        <div class="rescue-content">
+            <div class="info-cards">
+                <div class="info-card">
+                    <i class="ri-time-line"></i>
+                    <h3>Quick Response</h3>
+                    <p>Our team responds within 30 minutes</p>
+                </div>
+                <div class="info-card">
+                    <i class="ri-map-pin-line"></i>
+                    <h3>GPS Tracking</h3>
+                    <p>We locate the animal using your coordinates</p>
+                </div>
+                <div class="info-card">
+                    <i class="ri-hospital-line"></i>
+                    <h3>Medical Care</h3>
+                    <p>Immediate veterinary assistance provided</p>
+                </div>
+            </div>
+
+            <form class="rescue-form" id="rescueForm" onsubmit="handleRescueSubmit(event)">
+                <div class="form-section">
+                    <h2><i class="ri-information-line"></i> Animal Information</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="ri-bear-smile-line"></i> Animal Type *</label>
+                            <select id="animalType" required>
+                                <option value="">Select animal type</option>
+                                <option value="dog">Dog</option>
+                                <option value="cat">Cat</option>
+                                <option value="bird">Bird</option>
+                                <option value="cow">Cow</option>
+                                <option value="buffalo">Buffalo</option>
+                                <option value="goat">Goat</option>
+                                <option value="monkey">Monkey</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="ri-alert-line"></i> Emergency Level *</label>
+                            <select id="emergencyLevel" required>
+                                <option value="">Select emergency level</option>
+                                <option value="critical">Critical - Life threatening</option>
+                                <option value="high">High - Needs immediate help</option>
+                                <option value="medium">Medium - Injured but stable</option>
+                                <option value="low">Low - Minor issue</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="ri-file-list-line"></i> Condition Description *</label>
+                        <textarea id="conditionDesc" rows="4" placeholder="Describe the animal's condition, injuries, or situation in detail..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2><i class="ri-map-pin-line"></i> Location Details</h2>
+                    
+                    <div class="form-group">
+                        <label><i class="ri-road-map-line"></i> Full Address *</label>
+                        <input type="text" id="locationAddress" placeholder="Enter street address, area, or landmark" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="ri-building-line"></i> City *</label>
+                            <input type="text" id="locationCity" placeholder="e.g., Kathmandu" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="ri-map-line"></i> District *</label>
+                            <input type="text" id="locationDistrict" placeholder="e.g., Kathmandu District" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="ri-map-2-line"></i> Landmark / Additional Info</label>
+                        <input type="text" id="locationLandmark" placeholder="Near temple, hospital, school, etc.">
+                    </div>
+
+                    <button type="button" class="location-btn" onclick="getCurrentLocation()">
+                        <i class="ri-focus-line"></i> Use My Current Location
+                    </button>
+                    <div id="coordinatesDisplay" class="coordinates-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <h2><i class="ri-user-line"></i> Your Contact Information</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="ri-user-3-line"></i> Your Name *</label>
+                            <input type="text" id="reporterName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="ri-phone-line"></i> Phone Number *</label>
+                            <input type="tel" id="reporterPhone" placeholder="+977 98XXXXXXXX" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="ri-mail-line"></i> Email Address</label>
+                        <input type="email" id="reporterEmail" placeholder="your.email@example.com">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2><i class="ri-image-line"></i> Photo Evidence</h2>
+                    <p class="section-subtitle">Upload clear photos of the animal and location</p>
+                    
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('rescueImages').click()">
+                        <i class="ri-upload-cloud-line"></i>
+                        <h3>Click to upload or drag and drop</h3>
+                        <p>PNG, JPG up to 10MB (Max 5 images)</p>
+                    </div>
+                    <input type="file" id="rescueImages" accept="image/*" multiple style="display: none" onchange="handleImageUpload(event)">
+                    
+                    <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="window.history.back()">
+                        <i class="ri-close-line"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="ri-send-plane-fill"></i> Submit Rescue Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="success-modal" id="successModal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="ri-checkbox-circle-fill"></i>
+            </div>
+            <h2>Rescue Report Submitted!</h2>
+            <p>Thank you for reporting. Our rescue team has been notified and will respond shortly.</p>
+            <p class="report-id">Report ID: <strong id="reportIdDisplay"></strong></p>
+            <button class="btn-primary" onclick="closeSuccessModal()">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <div class="notification-toast" id="notificationToast">
+        <i class="ri-checkbox-circle-fill"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Success!</div>
+            <div class="notification-message" id="notificationMessage">Action completed</div>
+        </div>
+    </div>
+
+    <script src="rescue.js"></script>
+</body>
+</html>

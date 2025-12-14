@@ -41,7 +41,6 @@ const locations = [
     {type: 'vet', name: 'Paws & Claws Clinic', lat: 27.6930, lng: 85.3160, contact: '+977-9823456780', description: 'Preventive care specialists'}
 ];
 
-// Session Management
 function saveSession() {
     if (currentUser) {
         sessionStorage.setItem('hamrocare_session', JSON.stringify({
@@ -80,13 +79,27 @@ function clearSession() {
 function updateUIForLoggedInUser() {
     const userIcon = document.getElementById('userIcon');
     const userAvatar = document.getElementById('userAvatar');
-    const signOutBtn = document.getElementById('signOutBtn');
+    const userAvatarWrapper = document.querySelector('.user-avatar-wrapper');
+    const dropdownAvatar = document.getElementById('dropdownAvatar');
+    const dropdownName = document.getElementById('dropdownName');
+    const dropdownEmail = document.getElementById('dropdownEmail');
     
-    if (userIcon && userAvatar && signOutBtn && currentUser) {
-        userAvatar.src = currentUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.name;
-        userIcon.style.display = 'none';
-        userAvatar.style.display = 'block';
-        signOutBtn.style.display = 'none';
+    if (currentUser) {
+        const avatarUrl = currentUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.name;
+        
+        if (userIcon) userIcon.style.display = 'none';
+        if (userAvatarWrapper) userAvatarWrapper.classList.add('active');
+        if (userAvatar) userAvatar.src = avatarUrl;
+        if (dropdownAvatar) dropdownAvatar.src = avatarUrl;
+        if (dropdownName) dropdownName.textContent = currentUser.name;
+        if (dropdownEmail) dropdownEmail.textContent = currentUser.email;
+    }
+}
+
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('show');
     }
 }
 
@@ -139,15 +152,6 @@ function navigateLightbox(direction) {
         lightboxImage.style.opacity = '1';
     }, 150);
 }
-
-document.addEventListener('keydown', function(event) {
-    const lightbox = document.getElementById('lightboxOverlay');
-    if (lightbox && lightbox.classList.contains('active')) {
-        if (event.key === 'Escape') closeLightbox();
-        else if (event.key === 'ArrowLeft') navigateLightbox(-1);
-        else if (event.key === 'ArrowRight') navigateLightbox(1);
-    }
-});
 
 function toggleMapControls() {
     const controls = document.getElementById('mapControls');
@@ -419,12 +423,26 @@ function handleLogin(event) {
     const result = loginUser(email, password);
     
     if (result.success) {
-        isLoggedIn = true;
-        currentUser = result.user;
-        saveSession();
-        updateUIForLoggedInUser();
-        closeModal();
-        showNotification('Login Successful!', `Welcome back, ${result.user.name}!`);
+        if (result.user.verificationStatus === 'pending') {
+            showNotification('Pending Verification', 'Your account is pending admin approval. Please wait for verification.');
+            return;
+        }
+        
+        if (result.user.verificationStatus === 'rejected') {
+            showNotification('Account Rejected', 'Your account has been rejected. Please contact support.');
+            return;
+        }
+        
+        if (result.user.verificationStatus === 'approved' || result.user.userType === 'user') {
+            isLoggedIn = true;
+            currentUser = result.user;
+            saveSession();
+            updateUIForLoggedInUser();
+            closeModal();
+            showNotification('Login Successful!', `Welcome back, ${result.user.name}!`);
+        } else {
+            showNotification('Error', 'Unable to log in. Please try again.');
+        }
     } else {
         showNotification('Login Failed', result.message);
     }
@@ -525,23 +543,28 @@ function handleGoogleLogin(response) {
     const result = loginUser(googleUser.email, null);
     
     if (result.success) {
-        isLoggedIn = true;
-        currentUser = result.user;
-        saveSession();
-        updateUIForLoggedInUser();
-        closeModal();
-        showNotification('Login Successful!', `Welcome back, ${currentUser.name}!`);
+        if (result.user.verificationStatus === 'pending') {
+            showNotification('Pending Verification', 'Your account is pending admin approval. Please wait for verification.');
+            return;
+        }
+        
+        if (result.user.verificationStatus === 'rejected') {
+            showNotification('Account Rejected', 'Your account has been rejected. Please contact support.');
+            return;
+        }
+        
+        if (result.user.verificationStatus === 'approved' || result.user.userType === 'user') {
+            isLoggedIn = true;
+            currentUser = result.user;
+            saveSession();
+            updateUIForLoggedInUser();
+            closeModal();
+            showNotification('Login Successful!', `Welcome back, ${currentUser.name}!`);
+        } else {
+            showNotification('Error', 'Unable to log in. Please try again.');
+        }
     } else {
         showNotification('Login Failed', result.message);
-    }
-}
-
-function toggleUserMenu() {
-    if (isLoggedIn) {
-        const dropdown = document.getElementById('userDropdown');
-        if (dropdown) {
-            dropdown.classList.toggle('show');
-        }
     }
 }
 
@@ -549,17 +572,16 @@ function handleSignOut() {
     isLoggedIn = false;
     currentUser = null;
     clearSession();
+    
     const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
+    const userAvatarWrapper = document.querySelector('.user-avatar-wrapper');
     const dropdown = document.getElementById('userDropdown');
+    
     if (userIcon) userIcon.style.display = 'flex';
-    if (userAvatar) userAvatar.style.display = 'none';
+    if (userAvatarWrapper) userAvatarWrapper.classList.remove('active');
     if (dropdown) dropdown.classList.remove('show');
+    
     showNotification('Signed Out', 'Successfully signed out');
-}
-
-function goToDashboard() {
-    window.location.href = 'dashboard.html';
 }
 
 document.addEventListener('click', function(event) {
