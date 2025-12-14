@@ -1,6 +1,6 @@
 let currentUser = null;
 
-// Check session and load user data
+
 function checkSession() {
     const session = sessionStorage.getItem('hamrocare_session');
     if (!session) {
@@ -25,7 +25,7 @@ function checkSession() {
     }
 }
 
-// Load user profile data
+
 function loadUserProfile() {
     if (!currentUser || !dbInitialized) return;
     
@@ -33,17 +33,17 @@ function loadUserProfile() {
     if (profile) {
         currentUser = { ...currentUser, ...profile };
         
-        // Update header
+        
         document.getElementById('headerAvatar').src = currentUser.avatar;
         document.getElementById('headerName').textContent = currentUser.name;
         document.getElementById('headerEmail').textContent = currentUser.email;
         
-        // Update overview stats
+        
         document.getElementById('totalDonations').textContent = `Rs. ${currentUser.donationsTotal || 0}`;
         document.getElementById('itemsDonated').textContent = currentUser.itemsDonated || 0;
         document.getElementById('animalsRescued').textContent = currentUser.animalsRescued || 0;
         
-        // Update profile section
+       
         document.getElementById('profileAvatar').src = currentUser.avatar;
         document.getElementById('profileName').textContent = currentUser.name;
         document.getElementById('profileEmail').textContent = currentUser.email;
@@ -53,22 +53,22 @@ function loadUserProfile() {
         document.getElementById('editEmail').value = currentUser.email;
         document.getElementById('editPhone').value = currentUser.phoneNumber || '';
         
-        // Update donation summary
+       
         document.getElementById('donationTotal').textContent = `Rs. ${currentUser.donationsTotal || 0}`;
         document.getElementById('donationItems').textContent = currentUser.itemsDonated || 0;
         document.getElementById('donationCount').textContent = '0'; // Will be updated with real data
         
-        // Update rescue summary
+        
         document.getElementById('rescueTotal').textContent = currentUser.animalsRescued || 0;
         document.getElementById('rescuePending').textContent = '0'; // Will be updated with real data
         document.getElementById('rescueCompleted').textContent = currentUser.animalsRescued || 0;
         
-        // Update dropdown avatar
+        
         document.getElementById('dropdownAvatar').src = currentUser.avatar;
         document.getElementById('dropdownName').textContent = currentUser.name;
         document.getElementById('dropdownEmail').textContent = currentUser.email;
         
-        // Update badges
+        
         updateBadges();
     }
 }
@@ -136,25 +136,25 @@ function updateBadgeProgress(badgeId, percentage) {
     }
 }
 
-// Show section
+
 function showSection(sectionId) {
     event.preventDefault();
     
-    // Hide all sections
+    
     document.querySelectorAll('.dashboard-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Show selected section
+    
     document.getElementById(sectionId).classList.add('active');
     
-    // Update nav
+    
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     event.currentTarget.classList.add('active');
     
-    // Update title
+    
     const titles = {
         'overview': 'Dashboard Overview',
         'profile': 'My Profile',
@@ -182,7 +182,7 @@ function handleAvatarChange(event) {
             document.getElementById('headerAvatar').src = newAvatar;
             document.getElementById('dropdownAvatar').src = newAvatar;
             
-            // Update session
+            
             const session = JSON.parse(sessionStorage.getItem('hamrocare_session'));
             session.user.avatar = newAvatar;
             sessionStorage.setItem('hamrocare_session', JSON.stringify(session));
@@ -229,24 +229,24 @@ function handleProfileUpdate(event) {
         currentUser.name = name;
         currentUser.phoneNumber = phone;
         
-        // Update session
+        
         const session = JSON.parse(sessionStorage.getItem('hamrocare_session'));
         session.user.name = name;
         session.user.phoneNumber = phone;
         sessionStorage.setItem('hamrocare_session', JSON.stringify(session));
         
-        // Update UI
+        
         document.getElementById('headerName').textContent = name;
         document.getElementById('profileName').textContent = name;
         document.getElementById('dropdownName').textContent = name;
         
-        // Clear password fields
+        
         document.getElementById('editPassword').value = '';
         document.getElementById('editConfirmPassword').value = '';
         
         showNotification('Success', 'Profile updated successfully');
         
-        // Send SMS if phone number is provided
+        
         if (phone && phone !== currentUser.phoneNumber) {
             sendSMSNotification(phone);
         }
@@ -255,9 +255,9 @@ function handleProfileUpdate(event) {
     }
 }
 
-// Send SMS notification (this would call your Go backend)
+
 async function sendSMSNotification(phoneNumber) {
-    // This is a placeholder - you'll need to implement the actual API call to your Go backend
+    
     console.log('Sending SMS to:', phoneNumber);
     
     try {
@@ -277,22 +277,22 @@ async function sendSMSNotification(phoneNumber) {
         }
     } catch (error) {
         console.error('SMS sending failed:', error);
-        // Don't show error to user - SMS is optional
+        
     }
 }
 
-// Handle logout
+
 function handleLogout() {
     sessionStorage.removeItem('hamrocare_session');
     window.location.href = 'index.html';
 }
 
-// Toggle sidebar on mobile
+
 function toggleSidebar() {
     document.querySelector('.dashboard-sidebar').classList.toggle('active');
 }
 
-// Show notification
+
 function showNotification(title, message) {
     const toast = document.getElementById('notificationToast');
     const titleEl = document.getElementById('notificationTitle');
@@ -306,11 +306,11 @@ function showNotification(title, message) {
     }
 }
 
-// Initialize dashboard
+
 window.addEventListener('load', function() {
     if (!checkSession()) return;
     
-    // Wait for database to be ready
+    
     const checkDbReady = setInterval(() => {
         if (typeof dbInitialized !== 'undefined' && dbInitialized) {
             clearInterval(checkDbReady);
