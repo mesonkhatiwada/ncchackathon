@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HamroCare</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css " rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css " />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js "></script>
+    <script src="https://accounts.google.com/gsi/client " async defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -37,19 +37,19 @@
                         Category <i class="ri-arrow-down-s-line"></i>
                     </div>
                     <div class="dropdown-menu">
-                        <div class="dropdown-item" onclick="handleCategoryClick('rescue')">
+                        <div class="dropdown-item" onclick="window.location.href='rescue.html'">
                             <i class="ri-heart-pulse-line"></i>
                             <span>Rescue</span>
                         </div>
-                        <div class="dropdown-item" onclick="handleCategoryClick('donate')">
+                        <div class="dropdown-item" onclick="window.location.href='donate.html'">
                             <i class="ri-hand-heart-line"></i>
                             <span>Donate</span>
                         </div>
-                        <div class="dropdown-item" onclick="handleCategoryClick('adopt')">
+                        <div class="dropdown-item" onclick="window.location.href='adopt.html'">
                             <i class="ri-home-heart-line"></i>
                             <span>Adopt</span>
                         </div>
-                        <div class="dropdown-item" onclick="handleCategoryClick('report')">
+                        <div class="dropdown-item" onclick="window.location.href='report.html'">
                             <i class="ri-alarm-warning-line"></i>
                             <span>Report</span>
                         </div>
@@ -79,7 +79,7 @@
         <div class="hero-content">
             <h1>Hi Human.<br>You need <span class="highlight">Friends</span>?</h1>
             <p>From adoption to donations and rescue reports, everything starts here. We help you pick the right pet and support animals that need care.</p>
-            <p class="partnership-text">In partnership with <a href="https://bloodconnectbydevspirit.netlify.app" target="_blank" class="partnership-link">Blood Connect</a></p>
+            <p class="partnership-text">In partnership with <a href="https://bloodconnectbydevspirit.netlify.app " target="_blank" class="partnership-link">Blood Connect</a></p>
             <button class="cta-btn" onclick="openModal()">Get Started</button>
         </div>
         <div class="hero-image">
@@ -183,7 +183,7 @@
             <div class="gallery-item" onclick="openLightbox(10)">
                 <img src="gallery/11.png" alt="Event 11">
             </div>
-            <div class="gallery-item more" onclick="scrollToSection('gallery-section')">
+            <div class="gallery-item more" onclick="window.location.href='gallery.html'">
                 <i class="ri-add-line"></i>
             </div>
         </div>
@@ -285,7 +285,7 @@
                     </div>
                 </div>
                 
-                <button class="donate-btn" onclick="showNotification('Donate', 'Donation portal coming soon!')">
+                <button class="donate-btn" onclick="window.location.href='donation.html'">
                     <i class="ri-heart-fill" style="margin-right:8px"></i>
                     Donate Now
                 </button>
@@ -315,20 +315,20 @@
                 <div class="footer-column">
                     <h3>Services</h3>
                     <ul>
-                        <li><a href="#" onclick="handleCategoryClick('adopt')">Adopt a Pet</a></li>
-                        <li><a href="#" onclick="handleCategoryClick('rescue')">Rescue Support</a></li>
-                        <li><a href="#donation-section" onclick="scrollToSection('donation-section')">Donate</a></li>
-                        <li><a href="#" onclick="handleCategoryClick('report')">Report Animal</a></li>
+                        <li><a href="adopt.html">Adopt a Pet</a></li>
+                        <li><a href="rescue.html">Rescue Support</a></li>
+                        <li><a href="donation.html">Donate</a></li>
+                        <li><a href="report.html">Report Animal</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-column">
                     <h3>Connect</h3>
                     <ul>
-                        <li><a href="https://wa.me/9762639337" target="_blank"><i class="ri-whatsapp-line"></i> WhatsApp</a></li>
+                        <li><a href="https://wa.me/9762639337 " target="_blank"><i class="ri-whatsapp-line"></i> WhatsApp</a></li>
                         <li><a href="#"><i class="ri-facebook-fill"></i> Facebook</a></li>
                         <li><a href="#"><i class="ri-instagram-line"></i> Instagram</a></li>
-                        <li><a href="https://bloodconnectbydevspirit.netlify.app" target="_blank"><i class="ri-links-line"></i> Blood Connect</a></li>
+                        <li><a href="https://bloodconnectbydevspirit.netlify.app " target="_blank"><i class="ri-links-line"></i> Blood Connect</a></li>
                     </ul>
                 </div>
             </div>
