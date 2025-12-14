@@ -860,7 +860,7 @@
 
         let currentPet = null;
 
-        // Check login status from localStorage
+        
         function checkLoginStatus() {
             const userData = localStorage.getItem('userData');
             if (userData) {
@@ -1085,7 +1085,7 @@
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        // Initialize
+        // Initialize huni thau
         checkLoginStatus();
         renderPets();
     </script>
