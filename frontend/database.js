@@ -4,7 +4,6 @@ let dbInitialized = false;
 
 async function initDatabase() {
     try {
-        // Load SQL.js
         SQL = await initSqlJs({
             locateFile: file => `https://sql.js.org/dist/${file}`
         });
@@ -48,6 +47,10 @@ function createDatabase() {
         avatar TEXT,
         verification_status TEXT DEFAULT 'pending',
         verification_documents TEXT,
+        phone_number TEXT,
+        donations_total REAL DEFAULT 0,
+        items_donated INTEGER DEFAULT 0,
+        animals_rescued INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
@@ -90,9 +93,17 @@ function registerUser(userData) {
     }
 
     try {
+        const checkEmail = db.exec("SELECT email FROM users WHERE email = ?", [userData.email]);
+        if (checkEmail.length && checkEmail[0].values.length) {
+            return { success: false, message: 'Email already exists' };
+        }
+
+        // Auto-approve all users - no verification needed
+        const verificationStatus = 'approved';
+
         const stmt = db.prepare(`INSERT INTO users 
-            (email, password, name, user_type, login_method, google_id, avatar, verification_documents) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+            (email, password, name, user_type, login_method, google_id, avatar, verification_documents, verification_status, donations_total, items_donated, animals_rescued) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`);
         
         stmt.run([
             userData.email, 
@@ -102,12 +113,15 @@ function registerUser(userData) {
             userData.loginMethod, 
             userData.googleId || null, 
             userData.avatar, 
-            userData.verificationDocs || null
+            userData.verificationDocs || null,
+            verificationStatus
         ]);
         stmt.free();
         
         saveDatabase();
-        return { success: true, message: 'Registration submitted for verification' };
+        console.log('User registered:', userData.email);
+        
+        return { success: true, message: 'Account created successfully! You can now login.' };
     } catch (error) {
         console.error('Registration error:', error);
         if (error.message.includes('UNIQUE constraint failed')) {
@@ -127,32 +141,133 @@ function loginUser(email, password) {
         let result;
         
         if (password) {
-            result = db.exec(
-                "SELECT * FROM users WHERE email = ? AND password = ? AND verification_status = 'approved'", 
-                [email, password]
-            );
+            const userCheck = db.exec("SELECT * FROM users WHERE email = ?", [email]);
+            console.log('User check for email:', email, 'Found:', userCheck.length > 0);
+            
+            if (userCheck.length && userCheck[0].values.length) {
+                const userData = userCheck[0].values[0];
+                console.log('User found - Status:', userData[8], 'Password match:', userData[2] === password);
+                
+                if (userData[8] !== 'approved') {
+                    return { success: false, message: 'Your account is pending approval. Please wait for admin verification.' };
+                }
+                
+                if (userData[2] === password) {
+                    const user = {
+                        id: userData[0],
+                        email: userData[1],
+                        name: userData[3],
+                        userType: userData[4],
+                        avatar: userData[7],
+                        phoneNumber: userData[10],
+                        donationsTotal: userData[11],
+                        itemsDonated: userData[12],
+                        animalsRescued: userData[13]
+                    };
+                    console.log('Login successful for:', email);
+                    return { success: true, user };
+                } else {
+                    return { success: false, message: 'Invalid password' };
+                }
+            } else {
+                return { success: false, message: 'Email not found' };
+            }
         } else {
             result = db.exec(
                 "SELECT * FROM users WHERE email = ? AND login_method = 'google' AND verification_status = 'approved'", 
                 [email]
             );
+            
+            if (result.length && result[0].values.length) {
+                const userData = result[0].values[0];
+                const user = {
+                    id: userData[0],
+                    email: userData[1],
+                    name: userData[3],
+                    userType: userData[4],
+                    avatar: userData[7],
+                    phoneNumber: userData[10],
+                    donationsTotal: userData[11],
+                    itemsDonated: userData[12],
+                    animalsRescued: userData[13]
+                };
+                return { success: true, user };
+            }
+            
+            return { success: false, message: 'Google account not found or not approved' };
         }
-        
-        if (result.length && result[0].values.length) {
-            const user = {
-                id: result[0].values[0][0],
-                email: result[0].values[0][1],
-                name: result[0].values[0][3],
-                userType: result[0].values[0][4],
-                avatar: result[0].values[0][7]
-            };
-            return { success: true, user };
-        }
-        
-        return { success: false, message: 'Invalid credentials or account not approved' };
     } catch (error) {
         console.error('Login error:', error);
         return { success: false, message: 'Login failed: ' + error.message };
+    }
+}
+
+function updateUserProfile(userId, updateData) {
+    if (!dbInitialized || !db) {
+        return { success: false, message: 'Database not ready' };
+    }
+
+    try {
+        const updates = [];
+        const values = [];
+
+        if (updateData.name) {
+            updates.push('name = ?');
+            values.push(updateData.name);
+        }
+        if (updateData.password) {
+            updates.push('password = ?');
+            values.push(updateData.password);
+        }
+        if (updateData.avatar) {
+            updates.push('avatar = ?');
+            values.push(updateData.avatar);
+        }
+        if (updateData.phoneNumber !== undefined) {
+            updates.push('phone_number = ?');
+            values.push(updateData.phoneNumber);
+        }
+
+        updates.push('updated_at = CURRENT_TIMESTAMP');
+        values.push(userId);
+
+        const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+        db.run(query, values);
+        saveDatabase();
+
+        return { success: true, message: 'Profile updated successfully' };
+    } catch (error) {
+        console.error('Update error:', error);
+        return { success: false, message: 'Failed to update profile' };
+    }
+}
+
+function getUserProfile(userId) {
+    if (!dbInitialized || !db) {
+        return null;
+    }
+
+    try {
+        const result = db.exec("SELECT * FROM users WHERE id = ?", [userId]);
+        if (result.length && result[0].values.length) {
+            const userData = result[0].values[0];
+            return {
+                id: userData[0],
+                email: userData[1],
+                name: userData[3],
+                userType: userData[4],
+                avatar: userData[7],
+                phoneNumber: userData[10],
+                donationsTotal: userData[11],
+                itemsDonated: userData[12],
+                animalsRescued: userData[13],
+                createdAt: userData[14]
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('Get profile error:', error);
+        return null;
     }
 }
 
@@ -177,7 +292,7 @@ function getAllUsersFromDB() {
                     verificationStatus: row[8],
                     avatar: row[7],
                     verificationDocuments: row[9],
-                    createdAt: row[10]
+                    createdAt: row[14]
                 });
             });
         }
@@ -190,7 +305,6 @@ function getAllUsersFromDB() {
 
 function getPendingVerifications() {
     if (!dbInitialized || !db) {
-        console.error('Database not initialized');
         return [];
     }
 
@@ -210,7 +324,7 @@ function getPendingVerifications() {
                     avatar: row[7],
                     verificationStatus: row[8],
                     verificationDocuments: row[9],
-                    createdAt: row[10]
+                    createdAt: row[14]
                 });
             });
             return users;
@@ -224,7 +338,6 @@ function getPendingVerifications() {
 
 function getApprovedUsers() {
     if (!dbInitialized || !db) {
-        console.error('Database not initialized');
         return [];
     }
 
@@ -242,7 +355,7 @@ function getApprovedUsers() {
                     loginMethod: row[5],
                     avatar: row[7],
                     verificationStatus: row[8],
-                    createdAt: row[10]
+                    createdAt: row[14]
                 });
             });
             return users;
@@ -256,13 +369,13 @@ function getApprovedUsers() {
 
 function approveUser(userId) {
     if (!dbInitialized || !db) {
-        console.error('Database not initialized');
         return;
     }
 
     try {
         db.run("UPDATE users SET verification_status = 'approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [userId]);
         saveDatabase();
+        console.log('User approved:', userId);
     } catch (error) {
         console.error('Error approving user:', error);
     }
@@ -270,13 +383,13 @@ function approveUser(userId) {
 
 function rejectUser(userId) {
     if (!dbInitialized || !db) {
-        console.error('Database not initialized');
         return;
     }
 
     try {
         db.run("UPDATE users SET verification_status = 'rejected', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [userId]);
         saveDatabase();
+        console.log('User rejected:', userId);
     } catch (error) {
         console.error('Error rejecting user:', error);
     }
@@ -284,7 +397,6 @@ function rejectUser(userId) {
 
 function adminLogin(email, password) {
     if (!dbInitialized || !db) {
-        console.error('Database not initialized');
         return { success: false, message: 'Database not ready. Please try again.' };
     }
 
@@ -309,7 +421,6 @@ function adminLogin(email, password) {
     }
 }
 
-// Initialize database when script loads
 if (typeof window !== 'undefined') {
     initDatabase();
 }

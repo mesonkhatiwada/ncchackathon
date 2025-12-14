@@ -66,11 +66,15 @@ function loadDashboard() {
     const pending = users.filter(u => u.verificationStatus === 'pending');
     const approved = users.filter(u => u.verificationStatus === 'approved');
     const ngos = users.filter(u => u.userType === 'ngo');
+    const shelters = users.filter(u => u.userType === 'shelter');
+    const vets = users.filter(u => u.userType === 'veterinary');
     
     document.getElementById('totalUsers').textContent = users.length;
     document.getElementById('pendingUsers').textContent = pending.length;
     document.getElementById('approvedUsers').textContent = approved.length;
     document.getElementById('ngoCount').textContent = ngos.length;
+    document.getElementById('shelterCount').textContent = shelters.length;
+    document.getElementById('vetCount').textContent = vets.length;
     document.getElementById('pendingCount').textContent = pending.length;
 }
 
@@ -248,32 +252,67 @@ function viewDocuments(userId, userName) {
     
     if (result.length && result[0].values[0][0]) {
         try {
-            const docs = JSON.parse(result[0].values[0][0]);
+            const docsData = result[0].values[0][0];
+            let docs;
+            
+            // Try to parse as JSON first (for file upload data with base64)
+            try {
+                docs = JSON.parse(docsData);
+            } catch {
+                // If not JSON, treat as simple array
+                docs = [docsData];
+            }
             
             if (Array.isArray(docs) && docs.length > 0) {
                 docViewerBody.innerHTML = docs.map((doc, index) => {
-                    // Check if it's an image file
-                    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(doc);
-                    
-                    if (isImage) {
+                    // Check if doc is an object with base64 data
+                    if (typeof doc === 'object' && doc.data) {
                         return `
-                            <div class="doc-item">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
-                                     alt="${doc}" 
-                                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <div class="doc-item-name">${doc}</div>
+                            <div class="doc-item" onclick="openImageLightbox('${doc.data}')">
+                                <img src="${doc.data}" 
+                                     alt="${doc.name}" 
+                                     style="cursor: pointer;">
+                                <div class="doc-item-name">${doc.name}</div>
                             </div>
                         `;
-                    } else {
-                        // For non-image files (like PDFs)
+                    } 
+                    // Check if it's a base64 string
+                    else if (typeof doc === 'string' && doc.startsWith('data:image')) {
                         return `
-                            <div class="doc-item">
-                                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                                    <i class="ri-file-pdf-line"></i>
+                            <div class="doc-item" onclick="openImageLightbox('${doc}')">
+                                <img src="${doc}" 
+                                     alt="Document ${index + 1}" 
+                                     style="cursor: pointer;">
+                                <div class="doc-item-name">Document ${index + 1}</div>
+                            </div>
+                        `;
+                    }
+                    // Check if it's just a filename
+                    else {
+                        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(doc);
+                        
+                        if (isImage) {
+                            return `
+                                <div class="doc-item">
+                                    <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                        <i class="ri-image-line"></i>
+                                    </div>
+                                    <div class="doc-item-name">${doc}</div>
+                                    <div style="padding: 0.5rem; text-align: center; font-size: 0.75rem; color: #999;">
+                                        Image filename only (not uploaded)
+                                    </div>
                                 </div>
-                                <div class="doc-item-name">${doc}</div>
-                            </div>
-                        `;
+                            `;
+                        } else {
+                            return `
+                                <div class="doc-item">
+                                    <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                        <i class="ri-file-pdf-line"></i>
+                                    </div>
+                                    <div class="doc-item-name">${doc}</div>
+                                </div>
+                            `;
+                        }
                     }
                 }).join('');
             } else {
@@ -285,6 +324,7 @@ function viewDocuments(userId, userName) {
                 `;
             }
         } catch (error) {
+            console.error('Error loading documents:', error);
             docViewerBody.innerHTML = `
                 <div class="no-docs">
                     <i class="ri-error-warning-line"></i>
@@ -307,6 +347,19 @@ function viewDocuments(userId, userName) {
             closeDocViewer();
         }
     };
+}
+
+function openImageLightbox(imageSrc) {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    
+    lightboxImage.src = imageSrc;
+    lightbox.classList.add('active');
+}
+
+function closeImageLightbox() {
+    const lightbox = document.getElementById('imageLightbox');
+    lightbox.classList.remove('active');
 }
 
 function closeDocViewer() {
@@ -338,7 +391,7 @@ function exportDatabase() {
         const blob = new Blob([data], { type: 'application/x-sqlite3' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
         
         link.href = url;
         link.download = `hamrocare_backup_${timestamp}.db`;
@@ -465,8 +518,12 @@ function showNotification(title, message) {
         border-left: 4px solid #4ade80;
         max-width: 400px;
     `;
+    
+    const icon = title === 'Error' ? 'ri-error-warning-fill' : 'ri-checkbox-circle-fill';
+    const color = title === 'Error' ? '#ef4444' : '#4ade80';
+    
     toast.innerHTML = `
-        <i class="ri-checkbox-circle-fill" style="font-size: 1.5rem; color: #4ade80;"></i>
+        <i class="${icon}" style="font-size: 1.5rem; color: ${color};"></i>
         <div>
             <div style="font-weight: 600; color: #333; margin-bottom: 0.2rem;">${title}</div>
             <div style="font-size: 0.9rem; color: #666;">${message}</div>

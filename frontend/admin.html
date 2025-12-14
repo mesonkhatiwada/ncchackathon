@@ -93,6 +93,20 @@
                                 <p>NGOs/INGOs</p>
                             </div>
                         </div>
+                        <div class="stat-card">
+                            <i class="ri-home-4-line"></i>
+                            <div>
+                                <h3 id="shelterCount">0</h3>
+                                <p>Shelters</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="ri-heart-add-line"></i>
+                            <div>
+                                <h3 id="vetCount">0</h3>
+                                <p>Veterinary</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -206,6 +220,14 @@
                 <div class="loading">Loading documents...</div>
             </div>
         </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div class="image-lightbox" id="imageLightbox" onclick="closeImageLightbox()">
+        <button class="lightbox-close" onclick="closeImageLightbox()">
+            <i class="ri-close-line"></i>
+        </button>
+        <img src="" alt="Document" id="lightboxImage">
     </div>
 
     <script src="https://sql.js.org/dist/sql-wasm.js"></script>

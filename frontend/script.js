@@ -1,6 +1,6 @@
 let currentUserType = '';
 let isLoggedIn = false;
-let googleUser = {};
+let currentUser = null;
 let uploadedFiles = [];
 let signupUploadedFiles = [];
 let currentRating = 0;
@@ -10,17 +10,9 @@ let markers = [];
 let testimonials = [];
 let currentLightboxIndex = 0;
 const galleryImages = [
-    'gallery/1.png',
-    'gallery/2.png',
-    'gallery/3.png',
-    'gallery/4.png',
-    'gallery/5.png',
-    'gallery/6.png',
-    'gallery/7.png',
-    'gallery/8.png',
-    'gallery/9.png',
-    'gallery/10.png',
-    'gallery/11.png'
+    'gallery/1.png', 'gallery/2.png', 'gallery/3.png', 'gallery/4.png',
+    'gallery/5.png', 'gallery/6.png', 'gallery/7.png', 'gallery/8.png',
+    'gallery/9.png', 'gallery/10.png', 'gallery/11.png'
 ];
 
 const locations = [
@@ -48,6 +40,55 @@ const locations = [
     {type: 'vet', name: 'Valley Vet Center', lat: 27.7040, lng: 85.3290, contact: '+977-9812345679', description: 'Surgery and diagnostics'},
     {type: 'vet', name: 'Paws & Claws Clinic', lat: 27.6930, lng: 85.3160, contact: '+977-9823456780', description: 'Preventive care specialists'}
 ];
+
+// Session Management
+function saveSession() {
+    if (currentUser) {
+        sessionStorage.setItem('hamrocare_session', JSON.stringify({
+            user: currentUser,
+            isLoggedIn: isLoggedIn,
+            timestamp: Date.now()
+        }));
+    }
+}
+
+function loadSession() {
+    const session = sessionStorage.getItem('hamrocare_session');
+    if (session) {
+        try {
+            const data = JSON.parse(session);
+            const hourInMs = 3600000;
+            if (Date.now() - data.timestamp < hourInMs * 24) {
+                currentUser = data.user;
+                isLoggedIn = true;
+                updateUIForLoggedInUser();
+            } else {
+                clearSession();
+            }
+        } catch (e) {
+            clearSession();
+        }
+    }
+}
+
+function clearSession() {
+    sessionStorage.removeItem('hamrocare_session');
+    currentUser = null;
+    isLoggedIn = false;
+}
+
+function updateUIForLoggedInUser() {
+    const userIcon = document.getElementById('userIcon');
+    const userAvatar = document.getElementById('userAvatar');
+    const signOutBtn = document.getElementById('signOutBtn');
+    
+    if (userIcon && userAvatar && signOutBtn && currentUser) {
+        userAvatar.src = currentUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.name;
+        userIcon.style.display = 'none';
+        userAvatar.style.display = 'block';
+        signOutBtn.style.display = 'none';
+    }
+}
 
 function scrollToSection(sectionId) {
     const section = document.getElementById(sectionId);
@@ -82,7 +123,6 @@ function closeLightboxOnOverlay(event) {
 
 function navigateLightbox(direction) {
     currentLightboxIndex += direction;
-    
     if (currentLightboxIndex < 0) {
         currentLightboxIndex = galleryImages.length - 1;
     } else if (currentLightboxIndex >= galleryImages.length) {
@@ -102,20 +142,16 @@ function navigateLightbox(direction) {
 
 document.addEventListener('keydown', function(event) {
     const lightbox = document.getElementById('lightboxOverlay');
-    if (lightbox.classList.contains('active')) {
-        if (event.key === 'Escape') {
-            closeLightbox();
-        } else if (event.key === 'ArrowLeft') {
-            navigateLightbox(-1);
-        } else if (event.key === 'ArrowRight') {
-            navigateLightbox(1);
-        }
+    if (lightbox && lightbox.classList.contains('active')) {
+        if (event.key === 'Escape') closeLightbox();
+        else if (event.key === 'ArrowLeft') navigateLightbox(-1);
+        else if (event.key === 'ArrowRight') navigateLightbox(1);
     }
 });
 
 function toggleMapControls() {
     const controls = document.getElementById('mapControls');
-    controls.classList.toggle('open');
+    if (controls) controls.classList.toggle('open');
 }
 
 function initMap() {
@@ -160,9 +196,7 @@ function filterMap(filter) {
     const buttons = document.querySelectorAll('.map-filter-btn');
     buttons.forEach(btn => {
         btn.classList.remove('active');
-        if (btn.dataset.filter === filter) {
-            btn.classList.add('active');
-        }
+        if (btn.dataset.filter === filter) btn.classList.add('active');
     });
 
     markers.forEach(marker => {
@@ -188,19 +222,15 @@ function handleContact(name, contact) {
 }
 
 function handleNavigate(lat, lng) {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, '_blank');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
 }
 
 function setRating(rating) {
     currentRating = rating;
     const stars = document.querySelectorAll('#ratingInput i');
     stars.forEach((star, index) => {
-        if (index < rating) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
+        if (index < rating) star.classList.add('active');
+        else star.classList.remove('active');
     });
 }
 
@@ -219,8 +249,8 @@ function submitTestimonial(event) {
     }
 
     const text = document.getElementById('testimonialText').value;
-    const userName = googleUser.name || 'User';
-    const userAvatar = googleUser.picture || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now();
+    const userName = currentUser.name || 'User';
+    const userAvatar = currentUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now();
 
     const testimonial = {
         name: userName,
@@ -240,21 +270,23 @@ function submitTestimonial(event) {
 
 function renderTestimonials() {
     const grid = document.getElementById('testimonialsGrid');
-    grid.innerHTML = testimonials.map(t => `
-        <div class="testimonial-card">
-            <div class="testimonial-header">
-                <img src="${t.avatar}" alt="${t.name}" class="testimonial-avatar" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
-                <div class="testimonial-info">
-                    <h4>${t.name}</h4>
-                    <p>${t.date}</p>
+    if (grid) {
+        grid.innerHTML = testimonials.map(t => `
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <img src="${t.avatar}" alt="${t.name}" class="testimonial-avatar" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
+                    <div class="testimonial-info">
+                        <h4>${t.name}</h4>
+                        <p>${t.date}</p>
+                    </div>
                 </div>
+                <div class="testimonial-rating">
+                    ${'<i class="ri-star-fill"></i>'.repeat(t.rating)}${'<i class="ri-star-line"></i>'.repeat(5 - t.rating)}
+                </div>
+                <p class="testimonial-text">${t.text}</p>
             </div>
-            <div class="testimonial-rating">
-                ${'<i class="ri-star-fill"></i>'.repeat(t.rating)}${'<i class="ri-star-line"></i>'.repeat(5 - t.rating)}
-            </div>
-            <p class="testimonial-text">${t.text}</p>
-        </div>
-    `).join('');
+        `).join('');
+    }
 }
 
 function showNotification(title, message) {
@@ -262,47 +294,44 @@ function showNotification(title, message) {
     const titleEl = document.getElementById('notificationTitle');
     const messageEl = document.getElementById('notificationMessage');
     
-    titleEl.textContent = title;
-    messageEl.textContent = message;
-    
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 4000);
+    if (toast && titleEl && messageEl) {
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 4000);
+    }
 }
 
 function toggleMenu() {
     const navLinks = document.getElementById('navLinks');
     const hamburger = document.getElementById('hamburger');
-    navLinks.classList.toggle('active');
-    hamburger.classList.toggle('active');
+    if (navLinks) navLinks.classList.toggle('active');
+    if (hamburger) hamburger.classList.toggle('active');
 }
 
 function closeMenu() {
     const navLinks = document.getElementById('navLinks');
     const hamburger = document.getElementById('hamburger');
-    navLinks.classList.remove('active');
-    hamburger.classList.remove('active');
+    if (navLinks) navLinks.classList.remove('active');
+    if (hamburger) hamburger.classList.remove('active');
 }
 
 function toggleDropdown() {
     const dropdown = document.getElementById('categoryDropdown');
-    dropdown.classList.toggle('active');
-}
-
-function handleCategoryClick(category) {
-    showNotification(`${category.charAt(0).toUpperCase() + category.slice(1)}`, 'Section coming soon!');
-    toggleDropdown();
+    if (dropdown) dropdown.classList.toggle('active');
 }
 
 function openModal() {
-    document.getElementById('modalOverlay').classList.add('active');
-    showLogin();
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) {
+        modalOverlay.classList.add('active');
+        showLogin();
+    }
 }
 
 function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) modalOverlay.classList.remove('active');
 }
 
 function closeModalOnOverlay(event) {
@@ -354,22 +383,31 @@ function backToUserTypeSelection() {
 function handleSignupFileUpload(event) {
     const files = event.target.files;
     const uploadedFilesDiv = document.getElementById('signupUploadedFiles');
-    for (let file of files) {
-        signupUploadedFiles.push(file.name);
-        const fileItem = document.createElement('div');
-        fileItem.className = 'uploaded-file-item';
-        fileItem.innerHTML = `
-            <i class="ri-file-text-line"></i>
-            <span>${file.name}</span>
-        `;
-        uploadedFilesDiv.appendChild(fileItem);
-    }
+    
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            signupUploadedFiles.push({
+                name: file.name,
+                data: e.target.result,
+                type: file.type
+            });
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'uploaded-file-item';
+            fileItem.innerHTML = `
+                <i class="ri-file-text-line"></i>
+                <span>${file.name}</span>
+            `;
+            uploadedFilesDiv.appendChild(fileItem);
+        };
+        reader.readAsDataURL(file);
+    });
 }
 
 function handleLogin(event) {
     event.preventDefault();
     
-    // Check if database is initialized
     if (!dbInitialized) {
         showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
         return;
@@ -382,14 +420,9 @@ function handleLogin(event) {
     
     if (result.success) {
         isLoggedIn = true;
-        googleUser = result.user;
-        const userIcon = document.getElementById('userIcon');
-        const userAvatar = document.getElementById('userAvatar');
-        const signOutBtn = document.getElementById('signOutBtn');
-        userAvatar.src = result.user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + result.user.name;
-        userIcon.style.display = 'none';
-        userAvatar.style.display = 'block';
-        signOutBtn.style.display = 'inline-block';
+        currentUser = result.user;
+        saveSession();
+        updateUIForLoggedInUser();
         closeModal();
         showNotification('Login Successful!', `Welcome back, ${result.user.name}!`);
     } else {
@@ -400,7 +433,6 @@ function handleLogin(event) {
 function handleSignup(event) {
     event.preventDefault();
     
-    // Check if database is initialized
     if (!dbInitialized) {
         showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
         return;
@@ -445,13 +477,12 @@ function handleSignup(event) {
 }
 
 function handleGoogleSignup(response) {
-    // Check if database is initialized
     if (!dbInitialized) {
         showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
         return;
     }
     
-    googleUser = JSON.parse(atob(response.credential.split('.')[1]));
+    const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
     
     const userData = {
         email: googleUser.email,
@@ -468,38 +499,38 @@ function handleGoogleSignup(response) {
     
     if (result.success) {
         showNotification('Success', result.message);
-        closeModal();
-        document.getElementById('signupFormElement').reset();
-        signupUploadedFiles = [];
-        document.getElementById('signupUploadedFiles').innerHTML = '';
-        backToUserTypeSelection();
+        setTimeout(() => {
+            const loginResult = loginUser(googleUser.email, null);
+            if (loginResult.success) {
+                isLoggedIn = true;
+                currentUser = loginResult.user;
+                saveSession();
+                updateUIForLoggedInUser();
+                closeModal();
+            }
+        }, 500);
     } else {
         showNotification('Error', result.message);
     }
 }
 
 function handleGoogleLogin(response) {
-    // Check if database is initialized
     if (!dbInitialized) {
         showNotification('Please Wait', 'Database is still loading. Please try again in a moment.');
         return;
     }
     
-    googleUser = JSON.parse(atob(response.credential.split('.')[1]));
+    const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
     
     const result = loginUser(googleUser.email, null);
     
     if (result.success) {
         isLoggedIn = true;
-        const userIcon = document.getElementById('userIcon');
-        const userAvatar = document.getElementById('userAvatar');
-        const signOutBtn = document.getElementById('signOutBtn');
-        userAvatar.src = googleUser.picture;
-        userIcon.style.display = 'none';
-        userAvatar.style.display = 'block';
-        signOutBtn.style.display = 'inline-block';
+        currentUser = result.user;
+        saveSession();
+        updateUIForLoggedInUser();
         closeModal();
-        showNotification('Login Successful!', `Welcome back, ${googleUser.name}!`);
+        showNotification('Login Successful!', `Welcome back, ${currentUser.name}!`);
     } else {
         showNotification('Login Failed', result.message);
     }
@@ -507,32 +538,46 @@ function handleGoogleLogin(response) {
 
 function toggleUserMenu() {
     if (isLoggedIn) {
-        const signOutBtn = document.getElementById('signOutBtn');
-        signOutBtn.style.display = signOutBtn.style.display === 'none' ? 'inline-block' : 'none';
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('show');
+        }
     }
 }
 
 function handleSignOut() {
     isLoggedIn = false;
-    googleUser = {};
+    currentUser = null;
+    clearSession();
     const userIcon = document.getElementById('userIcon');
     const userAvatar = document.getElementById('userAvatar');
-    const signOutBtn = document.getElementById('signOutBtn');
-    userIcon.style.display = 'flex';
-    userAvatar.style.display = 'none';
-    signOutBtn.style.display = 'none';
+    const dropdown = document.getElementById('userDropdown');
+    if (userIcon) userIcon.style.display = 'flex';
+    if (userAvatar) userAvatar.style.display = 'none';
+    if (dropdown) dropdown.classList.remove('show');
     showNotification('Signed Out', 'Successfully signed out');
+}
+
+function goToDashboard() {
+    window.location.href = 'dashboard.html';
 }
 
 document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('categoryDropdown');
-    if (!dropdown.contains(event.target)) {
+    if (dropdown && !dropdown.contains(event.target)) {
         dropdown.classList.remove('active');
+    }
+    
+    const userDropdown = document.getElementById('userDropdown');
+    const userAvatar = document.getElementById('userAvatar');
+    if (userDropdown && userAvatar && !userAvatar.contains(event.target) && !userDropdown.contains(event.target)) {
+        userDropdown.classList.remove('show');
     }
 });
 
 window.addEventListener('load', function() {
-    // Wait for database to be ready
+    loadSession();
+    
     const checkDbReady = setInterval(() => {
         if (typeof dbInitialized !== 'undefined' && dbInitialized) {
             clearInterval(checkDbReady);
@@ -540,14 +585,16 @@ window.addEventListener('load', function() {
         }
     }, 100);
     
-    google.accounts.id.initialize({
-        client_id: "1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com",
-        callback: handleGoogleLogin,
-        context: "signin",
-        ux_mode: "popup",
-        auto_select: false,
-        use_fedcm_for_prompt: true,
-    });
+    if (typeof google !== 'undefined') {
+        google.accounts.id.initialize({
+            client_id: "1091162397024-te53me83sai0uhfmpk0rv7evvre59aeg.apps.googleusercontent.com",
+            callback: handleGoogleLogin,
+            context: "signin",
+            ux_mode: "popup",
+            auto_select: false,
+            use_fedcm_for_prompt: true,
+        });
+    }
     
     initMap();
     
@@ -556,42 +603,42 @@ window.addEventListener('load', function() {
             name: 'Anjali Sharma',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=anjali',
             rating: 5,
-            text: 'HamroCare helped me find the perfect companion! The adoption process was smooth and the staff was incredibly supportive. My new furry friend has brought so much joy to my life.',
+            text: 'HamroCare helped me find the perfect companion! The adoption process was smooth and the staff was incredibly supportive.',
             date: 'Dec 10, 2024'
         },
         {
             name: 'Rajesh Thapa',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rajesh',
             rating: 5,
-            text: 'I reported an injured dog through their platform and the rescue team responded within 30 minutes. The animal is now recovering well at a shelter. Truly amazing service!',
+            text: 'I reported an injured dog through their platform and the rescue team responded within 30 minutes. Truly amazing service!',
             date: 'Dec 8, 2024'
         },
         {
             name: 'Priya Gurung',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya',
             rating: 4,
-            text: 'Great platform for animal welfare. The live map feature is very helpful to locate nearby shelters and veterinary clinics. Would love to see more features added soon.',
+            text: 'Great platform for animal welfare. The live map feature is very helpful to locate nearby shelters and veterinary clinics.',
             date: 'Dec 5, 2024'
         },
         {
             name: 'Santosh Rai',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=santosh',
             rating: 5,
-            text: 'As a veterinary professional, I appreciate how HamroCare connects animal lovers with proper resources. The emergency alert system is particularly useful.',
+            text: 'As a veterinary professional, I appreciate how HamroCare connects animal lovers with proper resources.',
             date: 'Dec 2, 2024'
         },
         {
             name: 'Nisha Karki',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nisha',
             rating: 5,
-            text: 'Adopted my lovely cat Charlie through HamroCare two months ago. The team provided excellent post-adoption support and guidance. Highly recommend!',
+            text: 'Adopted my lovely cat Charlie through HamroCare two months ago. The team provided excellent post-adoption support.',
             date: 'Nov 28, 2024'
         },
         {
             name: 'Bikash Tamang',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bikash',
             rating: 4,
-            text: 'The donation system is transparent and I can see exactly where my contributions are going. Keep up the excellent work in animal welfare!',
+            text: 'The donation system is transparent and I can see exactly where my contributions are going. Keep up the excellent work!',
             date: 'Nov 25, 2024'
         }
     ];

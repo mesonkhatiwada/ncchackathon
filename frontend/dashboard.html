@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HamroCare</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://sql.js.org/dist/sql-wasm.js"></script>
+    <script src="database.js"></script>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="HamroCare" class="sidebar-logo">
+                <h2>HamroCare</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview" onclick="showSection('overview')">
+                    <i class="ri-dashboard-line"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-section="profile" onclick="showSection('profile')">
+                    <i class="ri-user-line"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="nav-item" data-section="badges" onclick="showSection('badges')">
+                    <i class="ri-medal-line"></i>
+                    <span>Badges & Achievements</span>
+                </a>
+                <a href="#" class="nav-item" data-section="donations" onclick="showSection('donations')">
+                    <i class="ri-hand-heart-line"></i>
+                    <span>My Donations</span>
+                </a>
+                <a href="#" class="nav-item" data-section="rescues" onclick="showSection('rescues')">
+                    <i class="ri-heart-pulse-line"></i>
+                    <span>Rescue Activity</span>
+                </a>
+                <a href="index.html" class="nav-item">
+                    <i class="ri-home-line"></i>
+                    <span>Back to Home</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="handleLogout()">
+                    <i class="ri-logout-box-line"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="ri-menu-line"></i>
+                    </button>
+                    <h1 id="sectionTitle">Dashboard Overview</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <img src="" alt="User" id="headerAvatar">
+                        <div class="user-info">
+                            <h3 id="headerName">Loading...</h3>
+                            <p id="headerEmail">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section class="dashboard-section active" id="overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4ade80, #22c55e)">
+                            <i class="ri-hand-heart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalDonations">Rs. 0</h3>
+                            <p>Total Donations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb)">
+                            <i class="ri-gift-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="itemsDonated">0</h3>
+                            <p>Items Donated</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
+                            <i class="ri-heart-pulse-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="animalsRescued">0</h3>
+                            <p>Animals Rescued</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
+                            <i class="ri-medal-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="badgesEarned">0</h3>
+                            <p>Badges Earned</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card recent-activity">
+                        <h2><i class="ri-time-line"></i> Recent Activity</h2>
+                        <div class="activity-list" id="activityList">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="ri-information-line"></i>
+                                </div>
+                                <div class="activity-info">
+                                    <p>No recent activity</p>
+                                    <span>Start by making a donation or rescue report</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card quick-actions">
+                        <h2><i class="ri-rocket-line"></i> Quick Actions</h2>
+                        <div class="actions-grid">
+                            <button class="action-btn" onclick="window.location.href='donate.html'">
+                                <i class="ri-hand-heart-line"></i>
+                                <span>Donate Now</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='rescue.html'">
+                                <i class="ri-heart-pulse-line"></i>
+                                <span>Report Rescue</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='adopt.html'">
+                                <i class="ri-home-heart-line"></i>
+                                <span>Adopt Pet</span>
+                            </button>
+                            <button class="action-btn" onclick="window.location.href='report.html'">
+                                <i class="ri-alarm-warning-line"></i>
+                                <span>Report Animal</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section class="dashboard-section" id="profile">
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar-section">
+                            <img src="" alt="Profile" id="profileAvatar" class="profile-avatar">
+                            <button class="change-avatar-btn" onclick="document.getElementById('avatarInput').click()">
+                                <i class="ri-camera-line"></i>
+                            </button>
+                            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarChange(event)">
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profileName">Loading...</h2>
+                            <p id="profileEmail">Loading...</p>
+                            <span class="profile-badge" id="profileBadge">USER</span>
+                        </div>
+                    </div>
+
+                    <form class="profile-form" onsubmit="handleProfileUpdate(event)">
+                        <div class="form-group">
+                            <label><i class="ri-user-line"></i> Full Name</label>
+                            <input type="text" id="editName" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="ri-mail-line"></i> Email Address</label>
+                            <input type="email" id="editEmail" disabled>
+                            <small>Email cannot be changed</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="ri-phone-line"></i> Phone Number</label>
+                            <input type="tel" id="editPhone" placeholder="+977 98XXXXXXXX">
+                            <small>SMS notifications via Sparrow SMS</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="ri-lock-line"></i> New Password</label>
+                            <input type="password" id="editPassword" placeholder="Leave blank to keep current">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="ri-lock-line"></i> Confirm New Password</label>
+                            <input type="password" id="editConfirmPassword" placeholder="Confirm new password">
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            <i class="ri-save-line"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Badges Section -->
+            <section class="dashboard-section" id="badges">
+                <div class="badges-container">
+                    <h2>Achievements & Badges</h2>
+                    <p class="section-subtitle">Earn badges by contributing to animal welfare</p>
+
+                    <div class="badges-grid">
+                        <div class="badge-card locked" id="badge-first-donation">
+                            <div class="badge-icon">
+                                <i class="ri-hand-heart-line"></i>
+                            </div>
+                            <h3>First Donation</h3>
+                            <p>Make your first donation</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="badge-card locked" id="badge-generous-giver">
+                            <div class="badge-icon">
+                                <i class="ri-money-dollar-circle-line"></i>
+                            </div>
+                            <h3>Generous Giver</h3>
+                            <p>Donate Rs. 5,000 or more</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="badge-card locked" id="badge-life-saver">
+                            <div class="badge-icon">
+                                <i class="ri-heart-pulse-line"></i>
+                            </div>
+                            <h3>Life Saver</h3>
+                            <p>Help rescue 5 animals</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="badge-card locked" id="badge-hero">
+                            <div class="badge-icon">
+                                <i class="ri-shield-star-line"></i>
+                            </div>
+                            <h3>Animal Hero</h3>
+                            <p>Rescue 10 animals</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="badge-card locked" id="badge-regular-donor">
+                            <div class="badge-icon">
+                                <i class="ri-repeat-line"></i>
+                            </div>
+                            <h3>Regular Donor</h3>
+                            <p>Donate 5 times</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="badge-card locked" id="badge-champion">
+                            <div class="badge-icon">
+                                <i class="ri-trophy-line"></i>
+                            </div>
+                            <h3>Champion</h3>
+                            <p>Donate Rs. 10,000 total</p>
+                            <div class="badge-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Donations Section -->
+            <section class="dashboard-section" id="donations">
+                <div class="donations-container">
+                    <h2>My Donations</h2>
+                    <div class="donations-summary">
+                        <div class="summary-card">
+                            <i class="ri-money-dollar-circle-line"></i>
+                            <div>
+                                <h3 id="donationTotal">Rs. 0</h3>
+                                <p>Total Amount</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <i class="ri-gift-line"></i>
+                            <div>
+                                <h3 id="donationItems">0</h3>
+                                <p>Items Donated</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <i class="ri-calendar-line"></i>
+                            <div>
+                                <h3 id="donationCount">0</h3>
+                                <p>Total Donations</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="donations-list">
+                        <div class="empty-state">
+                            <i class="ri-hand-heart-line"></i>
+                            <h3>No donations yet</h3>
+                            <p>Start making a difference today</p>
+                            <button class="primary-btn" onclick="window.location.href='donate.html'">
+                                Donate Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rescues Section -->
+            <section class="dashboard-section" id="rescues">
+                <div class="rescues-container">
+                    <h2>Rescue Activity</h2>
+                    <div class="rescues-summary">
+                        <div class="summary-card">
+                            <i class="ri-heart-pulse-line"></i>
+                            <div>
+                                <h3 id="rescueTotal">0</h3>
+                                <p>Animals Rescued</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <i class="ri-time-line"></i>
+                            <div>
+                                <h3 id="rescuePending">0</h3>
+                                <p>Pending</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <i class="ri-check-line"></i>
+                            <div>
+                                <h3 id="rescueCompleted">0</h3>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rescues-list">
+                        <div class="empty-state">
+                            <i class="ri-heart-pulse-line"></i>
+                            <h3>No rescue reports yet</h3>
+                            <p>Help save animals in need</p>
+                            <button class="primary-btn" onclick="window.location.href='rescue.html'">
+                                Report Rescue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+        <i class="ri-checkbox-circle-fill"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Success!</div>
+            <div class="notification-message" id="notificationMessage">Action completed</div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
