@@ -12,6 +12,8 @@
     <script src="https://sql.js.org/dist/sql-wasm.js"></script>
     <script src="database.js"></script>
     <script src="script.js"></script>
+    <link rel="icon" type="image/x-icon" href="../favicon_io/favicon.ico">
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -69,7 +71,8 @@
                         <div class="user-login-icon" onclick="openModal()" id="userLoginIcon">
                             <i class="ri-user-line"></i>
                         </div>
-                        <div class="user-profile-avatar" onclick="toggleUserMenu()" id="userProfileAvatar" style="display: none;">
+                        <div class="user-profile-avatar" onclick="toggleUserMenu()" id="userProfileAvatar"
+                            style="display: none;">
                             <img src="" alt="User" id="userAvatarImage">
                         </div>
                         <div class="user-dropdown" id="userDropdown">
@@ -445,7 +448,9 @@
                     <i class="ri-checkbox-circle-fill"></i>
                     <h2>Payment Successful!</h2>
                     <p class="donation-amount-display">NPR <span id="successAmount">0</span></p>
-                    <p class="donation-message">Thank you for your generous contribution! Your donation will help us rescue, rehabilitate, and provide loving care to animals in need. Together, we're making a real difference in their lives.</p>
+                    <p class="donation-message">Thank you for your generous contribution! Your donation will help us
+                        rescue, rehabilitate, and provide loving care to animals in need. Together, we're making a real
+                        difference in their lives.</p>
                     <button class="submit-btn" onclick="closeDonationModal()">Close</button>
                 </div>
             </div>
