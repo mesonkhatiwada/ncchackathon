@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk SMS - HamroCare</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <i class="ri-message-3-fill"></i>
+            </div>
+            <h2>Send Emergency SMS</h2>
+            <p class="subtitle">Send critical alerts to rescue volunteers</p>
+        </div>
+
+        <div class="info-box">
+            <i class="ri-information-fill"></i>
+            <div class="info-box-content">
+                <h4>Important Notice</h4>
+                <p>Leave the message blank to send a randomized emergency alert, or type a custom message for specific situations.</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <i class="ri-edit-line"></i>
+                Emergency Message
+            </label>
+            <textarea 
+                id="message" 
+                placeholder="Type your message (optional, or leave blank for random)"
+                maxlength="500"
+                oninput="updateCharCount()"
+            ></textarea>
+            <div class="char-counter">
+                <span id="charCount">0</span> / 500 characters
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="back-btn" onclick="goBack()">
+                <i class="ri-arrow-left-line"></i>
+                Back
+            </button>
+            <button id="sendBtn" onclick="sendSMS()">
+                <i class="ri-send-plane-fill"></i>
+                Send SMS
+            </button>
+        </div>
+
+        <p id="status"></p>
+    </div>
+
+    <script>
+        function updateCharCount() {
+            const message = document.getElementById("message").value;
+            document.getElementById("charCount").textContent = message.length;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function sendSMS() {
+            const message = document.getElementById("message").value;
+            const statusEl = document.getElementById("status");
+            const sendBtn = document.getElementById("sendBtn");
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading-spinner"></div> Sending...';
+            statusEl.style.display = 'none';
+
+            try {
+                const res = await fetch("/api/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message || undefined })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    statusEl.className = 'success';
+                    statusEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i><div><strong>SMS Sent Successfully!</strong><br>Emergency alert has been delivered to all volunteers.</div>';
+                    document.getElementById("message").value = '';
+                    updateCharCount();
+                } else {
+                    statusEl.className = 'error';
+                    statusEl.innerHTML = '<i class="ri-error-warning-fill"></i><div><strong>Failed to Send SMS</strong><br>' + (data.error || 'Unknown error occurred') + '</div>';
+                }
+
+                statusEl.style.display = 'flex';
+
+            } catch (error) {
+                statusEl.className = 'error';
+                statusEl.innerHTML = '<i class="ri-error-warning-fill"></i><div><strong>Connection Error</strong><br>Unable to reach the server. Please try again.</div>';
+                statusEl.style.display = 'flex';
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="ri-send-plane-fill"></i> Send SMS';
+            }
+        }
+
+        document.getElementById("message").addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && e.ctrlKey) {
+                sendSMS();
+            }
+        });
+    </script>
+</body>
+</html>
