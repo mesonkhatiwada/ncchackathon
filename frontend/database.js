@@ -2,6 +2,7 @@ let db;
 let dbInitialized = false;
 
 function createDatabase() {
+    
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,13 +75,48 @@ function createDatabase() {
         )
     `);
 
-    const adminCheck = db.exec("SELECT COUNT(*) as count FROM admins");
-    if (adminCheck[0].values[0][0] === 0) {
-        db.run("INSERT INTO admins (email, password, name) VALUES (?, ?, ?)", 
-            ['admin@hamrocare.com', 'admin123', 'Admin']);
+    try {
+        const adminCheck = db.exec("SELECT COUNT(*) as count FROM admins");
+        if (adminCheck[0].values[0][0] === 0) {
+            db.run("INSERT INTO admins (email, password, name) VALUES (?, ?, ?)", 
+                ['admin@hamrocare.com', 'admin123', 'Admin']);
+        }
+    } catch (error) {
+        console.error('Error checking admin:', error);
     }
 
     saveDatabase();
+    console.log('Database tables created successfully');
+}
+
+function migrateDatabase() {
+  
+    try {
+        const tableInfo = db.exec("PRAGMA table_info(users)");
+        const columns = tableInfo[0].values.map(row => row[1]); // Get column names
+        
+        const requiredColumns = {
+            'rescue_pending': 'ALTER TABLE users ADD COLUMN rescue_pending INTEGER DEFAULT 0',
+            'rescue_completed': 'ALTER TABLE users ADD COLUMN rescue_completed INTEGER DEFAULT 0',
+            'phone_number': 'ALTER TABLE users ADD COLUMN phone_number TEXT',
+            'donations_total': 'ALTER TABLE users ADD COLUMN donations_total REAL DEFAULT 0',
+            'items_donated': 'ALTER TABLE users ADD COLUMN items_donated INTEGER DEFAULT 0',
+            'animals_rescued': 'ALTER TABLE users ADD COLUMN animals_rescued INTEGER DEFAULT 0',
+            'donation_count': 'ALTER TABLE users ADD COLUMN donation_count INTEGER DEFAULT 0'
+        };
+        
+        for (const [columnName, alterSQL] of Object.entries(requiredColumns)) {
+            if (!columns.includes(columnName)) {
+                console.log(`Adding missing column: ${columnName}`);
+                db.run(alterSQL);
+            }
+        }
+        
+        saveDatabase();
+        console.log('Database migration completed');
+    } catch (error) {
+        console.error('Migration error:', error);
+    }
 }
 
 function initDatabase() {
@@ -93,12 +129,67 @@ function initDatabase() {
                     const uint8Array = new Uint8Array(JSON.parse(savedDb));
                     db = new SQL.Database(uint8Array);
                     console.log('Database loaded from localStorage');
+                    
+                   
+                    try {
+                        db.exec("SELECT * FROM rescue_reports LIMIT 1");
+                    } catch (e) {
+                        console.log('rescue_reports table missing, creating...');
+                        db.run(`
+                            CREATE TABLE IF NOT EXISTS rescue_reports (
+                                id TEXT PRIMARY KEY,
+                                user_id INTEGER NOT NULL,
+                                user_name TEXT NOT NULL,
+                                user_email TEXT NOT NULL,
+                                animal_type TEXT NOT NULL,
+                                emergency_level TEXT NOT NULL,
+                                condition_desc TEXT NOT NULL,
+                                location_address TEXT NOT NULL,
+                                location_city TEXT NOT NULL,
+                                location_district TEXT NOT NULL,
+                                location_landmark TEXT,
+                                location_coordinates TEXT,
+                                reporter_name TEXT NOT NULL,
+                                reporter_phone TEXT NOT NULL,
+                                reporter_email TEXT,
+                                images TEXT,
+                                status TEXT DEFAULT 'pending',
+                                timestamp TEXT NOT NULL,
+                                date_submitted TEXT NOT NULL,
+                                FOREIGN KEY (user_id) REFERENCES users(id)
+                            )
+                        `);
+                    }
+                    
+                    try {
+                        db.exec("SELECT * FROM user_activities LIMIT 1");
+                    } catch (e) {
+                        console.log('user_activities table missing, creating...');
+                        db.run(`
+                            CREATE TABLE IF NOT EXISTS user_activities (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                user_id INTEGER NOT NULL,
+                                activity_type TEXT NOT NULL,
+                                icon TEXT NOT NULL,
+                                title TEXT NOT NULL,
+                                description TEXT NOT NULL,
+                                time TEXT NOT NULL,
+                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (user_id) REFERENCES users(id)
+                            )
+                        `);
+                    }
+                    
+                    // Migrate missing columns
+                    migrateDatabase();
+                    
                 } catch (e) {
-                    console.log('Creating new database');
+                    console.log('Error loading database, creating new one:', e);
                     db = new SQL.Database();
                     createDatabase();
                 }
             } else {
+                console.log('No saved database, creating new one');
                 db = new SQL.Database();
                 createDatabase();
             }
@@ -113,9 +204,13 @@ function initDatabase() {
 
 function saveDatabase() {
     if (db) {
-        const data = db.export();
-        const buffer = Array.from(data);
-        localStorage.setItem('hamrocare_db', JSON.stringify(buffer));
+        try {
+            const data = db.export();
+            const buffer = Array.from(data);
+            localStorage.setItem('hamrocare_db', JSON.stringify(buffer));
+        } catch (error) {
+            console.error('Error saving database:', error);
+        }
     }
 }
 
@@ -185,14 +280,14 @@ function loginUser(email, password) {
                     name: userObj.name,
                     userType: userObj.user_type,
                     avatar: userObj.avatar,
-                    phoneNumber: userObj.phone_number,
+                    phoneNumber: userObj.phone_number || '',
                     verificationStatus: userObj.verification_status,
-                    donationsTotal: userObj.donations_total,
-                    itemsDonated: userObj.items_donated,
-                    animalsRescued: userObj.animals_rescued,
-                    donationCount: userObj.donation_count,
-                    rescuePending: userObj.rescue_pending,
-                    rescueCompleted: userObj.rescue_completed
+                    donationsTotal: userObj.donations_total || 0,
+                    itemsDonated: userObj.items_donated || 0,
+                    animalsRescued: userObj.animals_rescued || 0,
+                    donationCount: userObj.donation_count || 0,
+                    rescuePending: userObj.rescue_pending || 0,
+                    rescueCompleted: userObj.rescue_completed || 0
                 }
             };
         }
@@ -222,14 +317,14 @@ function getUserProfile(userId) {
                 name: userObj.name,
                 userType: userObj.user_type,
                 avatar: userObj.avatar,
-                phoneNumber: userObj.phone_number,
+                phoneNumber: userObj.phone_number || '',
                 verificationStatus: userObj.verification_status,
-                donationsTotal: userObj.donations_total,
-                itemsDonated: userObj.items_donated,
-                animalsRescued: userObj.animals_rescued,
-                donationCount: userObj.donation_count,
-                rescuePending: userObj.rescue_pending,
-                rescueCompleted: userObj.rescue_completed
+                donationsTotal: userObj.donations_total || 0,
+                itemsDonated: userObj.items_donated || 0,
+                animalsRescued: userObj.animals_rescued || 0,
+                donationCount: userObj.donation_count || 0,
+                rescuePending: userObj.rescue_pending || 0,
+                rescueCompleted: userObj.rescue_completed || 0
             };
         }
         
@@ -480,6 +575,7 @@ function saveRescueReport(reportData) {
         );
         
         saveDatabase();
+        console.log('Rescue report saved successfully:', reportData.id);
         return { success: true };
     } catch (error) {
         console.error('Save rescue report error:', error);
@@ -538,18 +634,11 @@ function updateRescueReportStatus(reportId, newStatus) {
     try {
         db.run("UPDATE rescue_reports SET status = ? WHERE id = ?", [newStatus, reportId]);
         saveDatabase();
+        console.log('Report status updated:', reportId, newStatus);
         return { success: true };
     } catch (error) {
+        console.error('Update rescue report status error:', error);
         return { success: false, message: 'Update failed: ' + error.message };
-    }
-}
-
-function updateUserRescueStats(userId) {
-    try {
-        db.run("UPDATE users SET animals_rescued = animals_rescued + 1, rescue_completed = rescue_completed + 1 WHERE id = ?", [userId]);
-        saveDatabase();
-    } catch (error) {
-        console.error('Update rescue stats error:', error);
     }
 }
 

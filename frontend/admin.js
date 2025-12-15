@@ -6,7 +6,7 @@ function handleAdminLogin(event) {
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
     
-    // Check if database is initialized
+  
     if (!dbInitialized) {
         alert('Database is still loading. Please wait a moment and try again.');
         return;
@@ -255,17 +255,16 @@ function viewDocuments(userId, userName) {
             const docsData = result[0].values[0][0];
             let docs;
             
-            // Try to parse as JSON first (for file upload data with base64)
             try {
                 docs = JSON.parse(docsData);
             } catch {
-                // If not JSON, treat as simple array
+             
                 docs = [docsData];
             }
             
             if (Array.isArray(docs) && docs.length > 0) {
                 docViewerBody.innerHTML = docs.map((doc, index) => {
-                    // Check if doc is an object with base64 data
+                   
                     if (typeof doc === 'object' && doc.data) {
                         return `
                             <div class="doc-item" onclick="openImageLightbox('${doc.data}')">
@@ -276,7 +275,7 @@ function viewDocuments(userId, userName) {
                             </div>
                         `;
                     } 
-                    // Check if it's a base64 string
+
                     else if (typeof doc === 'string' && doc.startsWith('data:image')) {
                         return `
                             <div class="doc-item" onclick="openImageLightbox('${doc}')">
@@ -287,7 +286,7 @@ function viewDocuments(userId, userName) {
                             </div>
                         `;
                     }
-                    // Check if it's just a filename
+
                     else {
                         const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(doc);
                         
@@ -367,7 +366,7 @@ function closeDocViewer() {
     modal.classList.remove('active');
 }
 
-// Database Management Functions
+
 function loadDatabaseInfo() {
     const users = getAllUsersFromDB();
     const dbData = localStorage.getItem('hamrocare_db');
@@ -386,7 +385,7 @@ function exportDatabase() {
             return;
         }
         
-        // Export database
+
         const data = db.export();
         const blob = new Blob([data], { type: 'application/x-sqlite3' });
         const url = URL.createObjectURL(blob);
@@ -399,7 +398,7 @@ function exportDatabase() {
         
         URL.revokeObjectURL(url);
         
-        // Save last backup time
+
         localStorage.setItem('hamrocare_last_backup', new Date().toLocaleString());
         loadDatabaseInfo();
         
@@ -426,7 +425,7 @@ function importDatabase(event) {
             const arrayBuffer = e.target.result;
             const uint8Array = new Uint8Array(arrayBuffer);
             
-            // Create new database from imported file
+
             db = new SQL.Database(uint8Array);
             
             // Verify the database structure
@@ -444,7 +443,6 @@ function importDatabase(event) {
                 return;
             }
             
-            // Save to localStorage
             saveDatabase();
             
             // Reload dashboard
@@ -464,12 +462,12 @@ function importDatabase(event) {
     
     reader.readAsArrayBuffer(file);
     
-    // Reset file input
+
     event.target.value = '';
 }
 
 function clearDatabase() {
-    const confirmed = confirm('⚠️ WARNING: This will delete ALL user data!\n\nAdmin accounts will be preserved, but all users, pending verifications, and approved accounts will be permanently deleted.\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?');
+    const confirmed = confirm('WARNING: This will delete ALL user data!\n\nAdmin accounts will be preserved, but all users, pending verifications, and approved accounts will be permanently deleted.\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?');
     
     if (!confirmed) return;
     
@@ -485,7 +483,7 @@ function clearDatabase() {
     }
     
     try {
-        // Delete all users but keep admins
+
         db.run("DELETE FROM users");
         saveDatabase();
         
@@ -536,9 +534,8 @@ function showNotification(title, message) {
     }, 4000);
 }
 
-// Wait for database to initialize before loading anything
 window.addEventListener('load', function() {
-    // Check if database is initialized every 100ms
+
     const checkDb = setInterval(() => {
         if (dbInitialized) {
             clearInterval(checkDb);

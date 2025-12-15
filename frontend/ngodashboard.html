@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="database.js"></script>
     <link rel="stylesheet" href="ngodashboard.css">
 </head>
+
 <body>
     <div class="login-overlay" id="loginOverlay">
         <div class="login-container">
@@ -41,7 +43,7 @@
                 <img src="images/logo.png" alt="HamroCare" class="logo">
                 <h2>NGO Dashboard</h2>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" onclick="showView('overview')">
                     <i class="ri-dashboard-line"></i>
@@ -61,7 +63,7 @@
                     <span>Back to Home</span>
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <button class="logout-btn" onclick="handleNGOLogout()">
                     <i class="ri-logout-box-line"></i>
@@ -71,11 +73,22 @@
         </aside>
 
         <main class="main-content">
+            <!-- Replace the <header> section in your ngodashboard.html with this -->
             <header class="header">
                 <h1 id="viewTitle">Dashboard Overview</h1>
-                <div class="ngo-info" id="ngoInfo">
-                    <i class="ri-shield-check-fill"></i>
-                    <span id="ngoName">NGO Admin</span>
+                <div class="header-actions">
+                    <div class="auto-refresh-indicator">
+                        <i class="ri-refresh-line"></i>
+                        <span>Auto-refreshing every 30s</span>
+                    </div>
+                    <button class="refresh-btn" onclick="manualRefresh()">
+                        <i class="ri-refresh-line"></i>
+                        Refresh Now
+                    </button>
+                    <div class="ngo-info" id="ngoInfo">
+                        <i class="ri-shield-check-fill"></i>
+                        <span id="ngoName">NGO Admin</span>
+                    </div>
                 </div>
             </header>
 
@@ -91,7 +104,7 @@
                                 <p>Critical Cases</p>
                             </div>
                         </div>
-                        
+
                         <div class="stat-card">
                             <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
                                 <i class="ri-time-line"></i>
@@ -101,7 +114,7 @@
                                 <p>Pending Reports</p>
                             </div>
                         </div>
-                        
+
                         <div class="stat-card">
                             <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a)">
                                 <i class="ri-check-line"></i>
@@ -111,7 +124,7 @@
                                 <p>Completed</p>
                             </div>
                         </div>
-                        
+
                         <div class="stat-card">
                             <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb)">
                                 <i class="ri-heart-pulse-line"></i>
@@ -136,7 +149,7 @@
                             <option value="pending" selected>Pending</option>
                             <option value="in-progress">In Progress</option>
                         </select>
-                        
+
                         <select id="emergencyFilter" onchange="filterReports()">
                             <option value="all">All Priorities</option>
                             <option value="critical">Critical</option>
@@ -144,7 +157,7 @@
                             <option value="medium">Medium</option>
                             <option value="low">Low</option>
                         </select>
-                        
+
                         <select id="animalFilter" onchange="filterReports()">
                             <option value="all">All Animals</option>
                             <option value="dog">Dog</option>
@@ -170,7 +183,7 @@
             <button class="close-modal" onclick="closeReportModal()">
                 <i class="ri-close-line"></i>
             </button>
-            
+
             <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
@@ -185,4 +198,5 @@
 
     <script src="ngodashboard.js"></script>
 </body>
+
 </html>

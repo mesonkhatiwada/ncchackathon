@@ -77,9 +77,9 @@ function clearSession() {
 }
 
 function updateUIForLoggedInUser() {
-    const userIcon = document.getElementById('userIcon');
-    const userAvatar = document.getElementById('userAvatar');
-    const userAvatarWrapper = document.querySelector('.user-avatar-wrapper');
+    const userLoginIcon = document.getElementById('userLoginIcon');
+    const userProfileAvatar = document.getElementById('userProfileAvatar');
+    const userAvatarImage = document.getElementById('userAvatarImage');
     const dropdownAvatar = document.getElementById('dropdownAvatar');
     const dropdownName = document.getElementById('dropdownName');
     const dropdownEmail = document.getElementById('dropdownEmail');
@@ -87,9 +87,9 @@ function updateUIForLoggedInUser() {
     if (currentUser) {
         const avatarUrl = currentUser.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.name;
         
-        if (userIcon) userIcon.style.display = 'none';
-        if (userAvatarWrapper) userAvatarWrapper.classList.add('active');
-        if (userAvatar) userAvatar.src = avatarUrl;
+        if (userLoginIcon) userLoginIcon.style.display = 'none';
+        if (userProfileAvatar) userProfileAvatar.style.display = 'block';
+        if (userAvatarImage) userAvatarImage.src = avatarUrl;
         if (dropdownAvatar) dropdownAvatar.src = avatarUrl;
         if (dropdownName) dropdownName.textContent = currentUser.name;
         if (dropdownEmail) dropdownEmail.textContent = currentUser.email;
@@ -238,6 +238,29 @@ function setRating(rating) {
     });
 }
 
+function saveTestimonialToStorage(testimonial) {
+    try {
+        let savedTestimonials = localStorage.getItem('hamrocare_testimonials');
+        let testimonialList = savedTestimonials ? JSON.parse(savedTestimonials) : [];
+        testimonialList.unshift(testimonial);
+        localStorage.setItem('hamrocare_testimonials', JSON.stringify(testimonialList));
+    } catch (e) {
+        console.error('Error saving testimonial:', e);
+    }
+}
+
+function loadTestimonialsFromStorage() {
+    try {
+        let savedTestimonials = localStorage.getItem('hamrocare_testimonials');
+        if (savedTestimonials) {
+            let testimonialList = JSON.parse(savedTestimonials);
+            testimonials = [...testimonialList, ...testimonials];
+        }
+    } catch (e) {
+        console.error('Error loading testimonials:', e);
+    }
+}
+
 function submitTestimonial(event) {
     event.preventDefault();
     
@@ -265,6 +288,7 @@ function submitTestimonial(event) {
     };
 
     testimonials.unshift(testimonial);
+    saveTestimonialToStorage(testimonial);
     renderTestimonials();
 
     document.getElementById('testimonialText').value = '';
@@ -291,6 +315,64 @@ function renderTestimonials() {
             </div>
         `).join('');
     }
+}
+
+function openDonationModal() {
+    const modal = document.getElementById('donationModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.getElementById('donationFormSection').style.display = 'block';
+        document.getElementById('donationLoadingSection').style.display = 'none';
+        document.getElementById('donationSuccessSection').style.display = 'none';
+    }
+}
+
+function closeDonationModal() {
+    const modal = document.getElementById('donationModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.getElementById('donationForm').reset();
+    }
+}
+
+function closeDonationModalOnOverlay(event) {
+    if (event.target === document.getElementById('donationModal')) {
+        closeDonationModal();
+    }
+}
+
+function handleDonation(event) {
+    event.preventDefault();
+    
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const username = document.getElementById('paymentUsername').value;
+    const mpin = document.getElementById('paymentMPIN').value;
+    const amount = document.getElementById('donationAmount').value;
+    const remarks = document.getElementById('donationRemarks').value;
+
+    if (!paymentMethod || !username || !mpin || !amount) {
+        showNotification('Error', 'Please fill all required fields');
+        return;
+    }
+
+    if (mpin.length !== 4) {
+        showNotification('Error', 'MPIN must be 4 digits');
+        return;
+    }
+
+    if (parseFloat(amount) < 10) {
+        showNotification('Error', 'Minimum donation amount is NPR 10');
+        return;
+    }
+
+    document.getElementById('donationFormSection').style.display = 'none';
+    document.getElementById('donationLoadingSection').style.display = 'block';
+
+    setTimeout(() => {
+        document.getElementById('donationLoadingSection').style.display = 'none';
+        document.getElementById('donationSuccessSection').style.display = 'block';
+        document.getElementById('successAmount').textContent = parseFloat(amount).toFixed(2);
+    }, 2500);
 }
 
 function showNotification(title, message) {
@@ -573,12 +655,12 @@ function handleSignOut() {
     currentUser = null;
     clearSession();
     
-    const userIcon = document.getElementById('userIcon');
-    const userAvatarWrapper = document.querySelector('.user-avatar-wrapper');
+    const userLoginIcon = document.getElementById('userLoginIcon');
+    const userProfileAvatar = document.getElementById('userProfileAvatar');
     const dropdown = document.getElementById('userDropdown');
     
-    if (userIcon) userIcon.style.display = 'flex';
-    if (userAvatarWrapper) userAvatarWrapper.classList.remove('active');
+    if (userLoginIcon) userLoginIcon.style.display = 'flex';
+    if (userProfileAvatar) userProfileAvatar.style.display = 'none';
     if (dropdown) dropdown.classList.remove('show');
     
     showNotification('Signed Out', 'Successfully signed out');
@@ -591,8 +673,8 @@ document.addEventListener('click', function(event) {
     }
     
     const userDropdown = document.getElementById('userDropdown');
-    const userAvatar = document.getElementById('userAvatar');
-    if (userDropdown && userAvatar && !userAvatar.contains(event.target) && !userDropdown.contains(event.target)) {
+    const userProfileAvatar = document.getElementById('userProfileAvatar');
+    if (userDropdown && userProfileAvatar && !userProfileAvatar.contains(event.target) && !userDropdown.contains(event.target)) {
         userDropdown.classList.remove('show');
     }
 });
@@ -664,5 +746,6 @@ window.addEventListener('load', function() {
             date: 'Nov 25, 2024'
         }
     ];
+    loadTestimonialsFromStorage();
     renderTestimonials();
 });

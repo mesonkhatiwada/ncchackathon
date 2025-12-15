@@ -64,34 +64,55 @@ function loadUserProfile() {
 
 function loadRecentActivity() {
     const activityList = document.getElementById('activityList');
-    const activities = getUserActivities(currentUser.id);
     
-    if (!activities || activities.length === 0) {
-        activityList.innerHTML = `
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="ri-information-line"></i>
-                </div>
-                <div class="activity-info">
-                    <p>No recent activity</p>
-                    <span>Start by making a donation or rescue report</span>
-                </div>
-            </div>
-        `;
+    if (!activityList) {
+        console.error('Activity list element not found');
         return;
     }
     
-    activityList.innerHTML = activities.map(activity => `
-        <div class="activity-item">
-            <div class="activity-icon">
-                <i class="${activity.icon}"></i>
+    try {
+        const activities = getUserActivities(currentUser.id);
+        
+        if (!activities || activities.length === 0) {
+            activityList.innerHTML = `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="ri-information-line"></i>
+                    </div>
+                    <div class="activity-info">
+                        <p>No recent activity</p>
+                        <span>Start by making a donation or rescue report</span>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        activityList.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="${activity.icon}"></i>
+                </div>
+                <div class="activity-info">
+                    <p>${activity.title}</p>
+                    <span>${activity.description} • ${activity.time}</span>
+                </div>
             </div>
-            <div class="activity-info">
-                <p>${activity.title}</p>
-                <span>${activity.description} • ${activity.time}</span>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading activities:', error);
+        activityList.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="ri-error-warning-line"></i>
+                </div>
+                <div class="activity-info">
+                    <p>Error loading activities</p>
+                    <span>Please refresh the page</span>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }
 }
 
 function updateBadges() {
@@ -130,7 +151,10 @@ function updateBadges() {
     }
     updateBadgeProgress('badge-champion', Math.min((donations / 10000) * 100, 100));
     
-    document.getElementById('badgesEarned').textContent = badgesEarned;
+    const badgesEarnedEl = document.getElementById('badgesEarned');
+    if (badgesEarnedEl) {
+        badgesEarnedEl.textContent = badgesEarned;
+    }
 }
 
 function unlockBadge(badgeId) {
@@ -158,7 +182,10 @@ function showSection(sectionId) {
         section.classList.remove('active');
     });
     
-    document.getElementById(sectionId).classList.add('active');
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
     
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
@@ -172,7 +199,15 @@ function showSection(sectionId) {
         'donations': 'My Donations',
         'rescues': 'Rescue Activity'
     };
-    document.getElementById('sectionTitle').textContent = titles[sectionId] || 'Dashboard';
+    const sectionTitleEl = document.getElementById('sectionTitle');
+    if (sectionTitleEl) {
+        sectionTitleEl.textContent = titles[sectionId] || 'Dashboard';
+    }
+    
+    // Reload activity when showing overview
+    if (sectionId === 'overview') {
+        loadRecentActivity();
+    }
 }
 
 function handleAvatarChange(event) {

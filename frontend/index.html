@@ -55,9 +55,9 @@
                             <i class="ri-home-heart-line"></i>
                             <span>Adopt</span>
                         </div>
-                        <div class="dropdown-item" onclick="window.location.href='report.html'">
-                            <i class="ri-alarm-warning-line"></i>
-                            <span>Report</span>
+                        <div class="dropdown-item" onclick="window.location.href='vet.html'">
+                            <i class="ri-heart-add-line"></i>
+                            <span>Veterinary</span>
                         </div>
                     </div>
                 </li>
@@ -65,11 +65,13 @@
                 <li><a href="#gallery-section" onclick="closeMenu(); scrollToSection('gallery-section')">Gallery</a>
                 </li>
                 <li class="user-menu-container">
-                    <div class="user-icon" onclick="openModal()" id="userIcon">
-                        <i class="ri-user-line"></i>
-                    </div>
-                    <div class="user-avatar-wrapper">
-                        <img src="" alt="User" class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
+                    <div class="user-profile-wrapper" id="userProfileWrapper">
+                        <div class="user-login-icon" onclick="openModal()" id="userLoginIcon">
+                            <i class="ri-user-line"></i>
+                        </div>
+                        <div class="user-profile-avatar" onclick="toggleUserMenu()" id="userProfileAvatar" style="display: none;">
+                            <img src="" alt="User" id="userAvatarImage">
+                        </div>
                         <div class="user-dropdown" id="userDropdown">
                             <div class="dropdown-header">
                                 <img src="" alt="User" id="dropdownAvatar" class="dropdown-avatar">
@@ -314,7 +316,7 @@
                     </div>
                 </div>
 
-                <button class="donate-btn" onclick="window.location.href='donation.html'">
+                <button class="donate-btn" onclick="openDonationModal()">
                     <i class="ri-heart-fill" style="margin-right:8px"></i>
                     Donate Now
                 </button>
@@ -348,7 +350,7 @@
                         <li><a href="adopt.html">Adopt a Pet</a></li>
                         <li><a href="rescue.html">Rescue Support</a></li>
                         <li><a href="donation.html">Donate</a></li>
-                        <li><a href="report.html">Report Animal</a></li>
+                        <li><a href="vet.html">Veterinary</a></li>
                     </ul>
                 </div>
 
@@ -385,6 +387,68 @@
             </button>
             <img src="" alt="Gallery Image" id="lightboxImage">
             <div class="lightbox-counter" id="lightboxCounter">1 / 11</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="donationModal" onclick="closeDonationModalOnOverlay(event)">
+        <div class="modal donation-modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeDonationModal()">
+                <i class="ri-close-line"></i>
+            </button>
+
+            <div id="donationFormSection">
+                <h2 class="modal-title">Support Our Mission</h2>
+                <p class="modal-subtitle">Your donation helps save lives</p>
+
+                <form onsubmit="handleDonation(event)" id="donationForm">
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Select payment method</option>
+                            <option value="esewa">eSewa</option>
+                            <option value="khalti">Khalti</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Username/Phone Number</label>
+                        <input type="text" id="paymentUsername" placeholder="Enter your eSewa/Khalti username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>MPIN</label>
+                        <input type="password" id="paymentMPIN" placeholder="Enter your MPIN" maxlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (NPR)</label>
+                        <input type="number" id="donationAmount" placeholder="Enter amount" min="10" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks (Optional)</label>
+                        <textarea id="donationRemarks" placeholder="Add a message..." rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="ri-hand-heart-line" style="margin-right:8px"></i>
+                        Donate Now
+                    </button>
+                </form>
+            </div>
+
+            <div id="donationLoadingSection" style="display:none;">
+                <div class="donation-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Processing your donation...</p>
+                </div>
+            </div>
+
+            <div id="donationSuccessSection" style="display:none;">
+                <div class="donation-success">
+                    <i class="ri-checkbox-circle-fill"></i>
+                    <h2>Payment Successful!</h2>
+                    <p class="donation-amount-display">NPR <span id="successAmount">0</span></p>
+                    <p class="donation-message">Thank you for your generous contribution! Your donation will help us rescue, rehabilitate, and provide loving care to animals in need. Together, we're making a real difference in their lives.</p>
+                    <button class="submit-btn" onclick="closeDonationModal()">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 

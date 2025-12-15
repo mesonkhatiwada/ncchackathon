@@ -14,7 +14,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar */
+
 .dashboard-sidebar {
     width: 280px;
     background: white;
@@ -167,7 +167,7 @@ body {
     font-size: 0.85rem;
 }
 
-/* Dashboard Sections */
+
 .dashboard-section {
     display: none;
     padding: 2rem;
@@ -189,7 +189,7 @@ body {
     }
 }
 
-/* Stats Grid */
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -237,7 +237,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* Content Grid */
+
 .content-grid {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
@@ -458,7 +458,7 @@ body {
     transform: scale(1.02);
 }
 
-/* Badges Section */
+
 .badges-container h2 {
     color: #333;
     margin-bottom: 0.5rem;
@@ -542,7 +542,7 @@ body {
     transition: width 0.5s;
 }
 
-/* Donations & Rescues */
+
 .donations-container h2,
 .rescues-container h2 {
     color: #333;
@@ -628,7 +628,7 @@ body {
     transform: scale(1.05);
 }
 
-/* Notification Toast */
+
 .notification-toast {
     position: fixed;
     top: 20px;
