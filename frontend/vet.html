@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veterinary Services - HamroCare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../favicon_io/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            overflow-x: hidden;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .logo img {
+            height: 74px;
+            width: auto;
+            top: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: color .3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #4ade80;
+        }
+
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-login-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .3s;
+            color: #4ade80;
+            font-size: 1.5rem;
+        }
+
+        .user-login-icon:hover {
+            background: #4ade80;
+            color: #fff;
+        }
+
+        .user-profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid #4ade80;
+        }
+
+        .user-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            min-width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .user-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #4ade80;
+        }
+
+        .dropdown-user-info h4 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .dropdown-user-info p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #f0f0f0;
+        }
+
+        .dropdown-item-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .dropdown-item-link:hover {
+            background: #f0fdf4;
+            color: #4ade80;
+        }
+
+        .dropdown-item-link.logout {
+            color: #ef4444;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .dropdown-item-link.logout:hover {
+            background: #fee2e2;
+        }
+
+        .dropdown-item-link i {
+            font-size: 1.3rem;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            border-radius: 3px;
+            transition: all .3s;
+        }
+
+        .vet-hero {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            padding: 6rem 5% 4rem;
+            text-align: center;
+        }
+
+        .vet-hero h1 {
+            font-size: 3.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .vet-hero .highlight {
+            color: #4ade80;
+        }
+
+        .vet-hero p {
+            color: #666;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .doctors-section {
+            padding: 5rem 5%;
+            background: #f9fafb;
+        }
+
+        .doctor-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 4rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+        }
+
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4rem;
+        }
+
+        .doctor-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .doctor-image {
+            width: 280px;
+            height: 280px;
+            margin-bottom: 2rem;
+        }
+
+        .doctor-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .doctor-info h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: .5rem;
+        }
+
+        .doctor-title {
+            color: #4ade80;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .doctor-rating {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+
+        .rating-text {
+            color: #666;
+            font-size: .9rem;
+            margin-left: .3rem;
+        }
+
+        .doctor-details {
+            display: flex;
+            flex-direction: column;
+            gap: .7rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            color: #666;
+            font-size: .9rem;
+            text-align: left;
+        }
+
+        .detail-item i {
+            color: #4ade80;
+            font-size: 1rem;
+            width: 20px;
+        }
+
+        .doctor-bio {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: .9rem;
+        }
+
+        .doctor-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .book-btn, .navigate-btn {
+            padding: .8rem 1.8rem;
+            border: none;
+            border-radius: 50px;
+            font-size: .95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .book-btn {
+            background: #4ade80;
+            color: #fff;
+        }
+
+        .book-btn:hover {
+            background: #22c55e;
+        }
+
+        .navigate-btn {
+            background: #fff;
+            color: #4ade80;
+            border: 2px solid #4ade80;
+        }
+
+        .navigate-btn:hover {
+            background: #4ade80;
+            color: #fff;
+        }
+
+        .section-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.8rem;
+            color: #333;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title::after {
+            content: '.';
+            color: #4ade80;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #666;
+            transition: all .3s;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: .5rem;
+            text-align: center;
+        }
+
+        .modal-subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: .5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: .8rem;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color .3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #4ade80;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .3s;
+        }
+
+        .submit-btn:hover {
+            background: #22c55e;
+        }
+
+        .map-modal .modal {
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .clinic-info {
+            background: #f0fdf4;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .clinic-info h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: .8rem;
+            color: #666;
+        }
+
+        .info-item i {
+            color: #4ade80;
+            font-size: 1.2rem;
+            width: 25px;
+        }
+
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform .3s ease;
+            border-left: 4px solid #4ade80;
+            max-width: 400px;
+        }
+
+        .notification-toast.show {
+            transform: translateX(0);
+        }
+
+        .notification-toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .notification-toast i {
+            font-size: 1.5rem;
+            color: #4ade80;
+            min-width: 24px;
+        }
+
+        .notification-toast.error i {
+            color: #ef4444;
+        }
+
+        .notification-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: .2rem;
+            font-size: 1rem;
+        }
+
+        .notification-message {
+            font-size: .9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        @media(max-width: 968px) {
+            .doctor-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .doctor-image {
+                height: 250px;
+                width: 250px;
+            }
+        }
+
+        @media(max-width: 768px) {
+            .vet-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            .doctor-container {
+                padding: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .map-container {
+                height: 400px;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: #fff;
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                transition: right .3s;
+                box-shadow: 0 5px 20px rgba(0,0,0,.1);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+        }
+
+        @media(max-width: 480px) {
+            .doctor-image {
+                height: 220px;
+                width: 220px;
+            }
+
+            .doctor-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .book-btn, .navigate-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="images/logo.png" alt="HamroCare Logo" onclick="window.location.href='index.html'">
+        </div>
+        <div class="nav-right">
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#gallery">Gallery</a></li>
+                    <li><a href="index.html#map">Map</a></li>
+                    <li><a href="vet.html" class="active">Veterinary</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu-container">
+                <div class="user-profile-wrapper" id="userProfileWrapper">
+                    <div class="user-login-icon" id="userLoginIcon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-profile-avatar" id="userProfileAvatar" style="display: none;">
+                        <img src="" alt="User Avatar" id="userAvatarImg">
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <img src="" alt="User" class="dropdown-avatar" id="dropdownAvatar">
+                            <div class="dropdown-user-info">
+                                <h4 id="dropdownUserName">User Name</h4>
+                                <p id="dropdownUserEmail">user@email.com</p>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="dashboard.html" class="dropdown-item-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="#" class="dropdown-item-link">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item-link logout" onclick="handleLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="vet-hero">
+        <h1>Expert <span class="highlight">Veterinary Care</span></h1>
+        <p>Meet our experienced veterinarians dedicated to providing the best care for your beloved pets</p>
+    </section>
+
+    <section class="doctors-section">
+        <h2 class="section-title">Our Veterinarians</h2>
+
+        <div class="doctor-container">
+            <div class="doctor-grid">
+                <div class="doctor-profile">
+                    <div class="doctor-image">
+                        <img src="doctors/1.png" alt="Dr. Bibek Thapa">
+                    </div>
+                    <div class="doctor-info">
+                        <h2>Dr. Bibek Thapa</h2>
+                        <div class="doctor-title">DVM, MVSc - Chief Veterinary Officer</div>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">5.0 (250+ reviews)</span>
+                        </div>
+                        <div class="doctor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Master of Veterinary Science</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-certificate"></i>
+                                <span>15+ Years Experience</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <span>Surgery & Emergency Care</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Mon-Sat, 9:00 AM - 6:00 PM</span>
+                            </div>
+                        </div>
+                        <p class="doctor-bio">
+                            Dedicated veterinarian with extensive experience in animal healthcare, specializing in surgery and emergency care.
+                        </p>
+                        <div class="doctor-actions">
+                            <button class="book-btn" onclick="openBookingModal('Dr. Bibek Thapa')">
+                                <i class="fas fa-calendar-check"></i>
+                                Book Appointment
+                            </button>
+                            <button class="navigate-btn" onclick="openMapModal('Dr. Bibek Thapa', 'Bharatpur-10, Chitwan', 27.6916, 84.4278)">
+                                <i class="fas fa-map-marker-alt"></i>
+                                View Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doctor-profile">
+                    <div class="doctor-image">
+                        <img src="doctors/2.png" alt="Dr. Anjali Sharma">
+                    </div>
+                    <div class="doctor-info">
+                        <h2>Dr. Anjali Sharma</h2>
+                        <div class="doctor-title">BVSc & AH - Small Animal Specialist</div>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="rating-text">4.8 (180+ reviews)</span>
+                        </div>
+                        <div class="doctor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Bachelor of Veterinary Science</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-certificate"></i>
+                                <span>10+ Years Experience</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <span>Dermatology & Internal Medicine</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Tue-Sun, 10:00 AM - 5:00 PM</span>
+                            </div>
+                        </div>
+                        <p class="doctor-bio">
+                            Specializes in small animal care with a focus on dermatology and internal medicine, known for gentle approach.
+                        </p>
+                        <div class="doctor-actions">
+                            <button class="book-btn" onclick="openBookingModal('Dr. Anjali Sharma')">
+                                <i class="fas fa-calendar-check"></i>
+                                Book Appointment
+                            </button>
+                            <button class="navigate-btn" onclick="openMapModal('Dr. Anjali Sharma', 'Narayanghat-5, Chitwan', 27.7050, 84.4297)">
+                                <i class="fas fa-map-marker-alt"></i>
+                                View Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doctor-profile">
+                    <div class="doctor-image">
+                        <img src="doctors/3.png" alt="Dr. Rajesh Poudel">
+                    </div>
+                    <div class="doctor-info">
+                        <h2>Dr. Rajesh Poudel</h2>
+                        <div class="doctor-title">DVM - Exotic Animal Veterinarian</div>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">4.9 (145+ reviews)</span>
+                        </div>
+                        <div class="doctor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Doctor of Veterinary Medicine</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-certificate"></i>
+                                <span>8+ Years Experience</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <span>Exotic Pets & Avian Medicine</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Mon-Fri, 11:00 AM - 7:00 PM</span>
+                            </div>
+                        </div>
+                        <p class="doctor-bio">
+                            Expert in exotic animal care, specializing in birds, reptiles, and small mammals with unique veterinary expertise.
+                        </p>
+                        <div class="doctor-actions">
+                            <button class="book-btn" onclick="openBookingModal('Dr. Rajesh Poudel')">
+                                <i class="fas fa-calendar-check"></i>
+                                Book Appointment
+                            </button>
+                            <button class="navigate-btn" onclick="openMapModal('Dr. Rajesh Poudel', 'Bharatpur-8, Chitwan', 27.6785, 84.4350)">
+                                <i class="fas fa-map-marker-alt"></i>
+                                View Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doctor-profile">
+                    <div class="doctor-image">
+                        <img src="doctors/4.png" alt="Dr. Meera Adhikari">
+                    </div>
+                    <div class="doctor-info">
+                        <h2>Dr. Meera Adhikari</h2>
+                        <div class="doctor-title">BVSc & AH, MVSc - Veterinary Surgeon</div>
+                        <div class="doctor-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">5.0 (200+ reviews)</span>
+                        </div>
+                        <div class="doctor-details">
+                            <div class="detail-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Master's in Veterinary Surgery</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-certificate"></i>
+                                <span>12+ Years Experience</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-stethoscope"></i>
+                                <span>Orthopedic & Soft Tissue Surgery</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Wed-Mon, 8:00 AM - 4:00 PM</span>
+                            </div>
+                        </div>
+                        <p class="doctor-bio">
+                            Highly skilled veterinary surgeon with expertise in complex orthopedic and soft tissue surgical procedures.
+                        </p>
+                        <div class="doctor-actions">
+                            <button class="book-btn" onclick="openBookingModal('Dr. Meera Adhikari')">
+                                <i class="fas fa-calendar-check"></i>
+                                Book Appointment
+                            </button>
+                            <button class="navigate-btn" onclick="openMapModal('Dr. Meera Adhikari', 'Bharatpur-12, Chitwan', 27.6990, 84.4400)">
+                                <i class="fas fa-map-marker-alt"></i>
+                                View Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeBookingModal()">×</button>
+            <h2 class="modal-title">Book Appointment</h2>
+            <p class="modal-subtitle">Schedule your pet's visit with <span id="selectedDoctor"></span></p>
+
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label>Doctor *</label>
+                    <input type="text" id="doctorName" readonly required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pet Owner Name *</label>
+                        <input type="text" id="ownerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="phoneNumber" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pet Name *</label>
+                        <input type="text" id="petName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Pet Type *</label>
+                        <select id="petType" required>
+                            <option value="">Select Pet Type</option>
+                            <option value="Dog">Dog</option>
+                            <option value="Cat">Cat</option>
+                            <option value="Bird">Bird</option>
+                            <option value="Rabbit">Rabbit</option>
+                            <option value="Hamster">Hamster</option>
+                            <option value="Guinea Pig">Guinea Pig</option>
+                            <option value="Reptile">Reptile</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Service Type *</label>
+                    <select id="serviceType" required>
+                        <option value="">Select Service</option>
+                        <option value="Vaccination">Vaccination</option>
+                        <option value="Health Checkup">Health Checkup</option>
+                        <option value="Surgery">Surgery</option>
+                        <option value="Dental Care">Dental Care</option>
+                        <option value="Grooming">Grooming</option>
+                        <option value="Emergency Care">Emergency Care</option>
+                        <option value="Consultation">General Consultation</option>
+                        <option value="Follow-up">Follow-up Visit</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Preferred Date *</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred Time *</label>
+                        <input type="time" id="appointmentTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Any special requirements or concerns about your pet..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-check-circle"></i> Confirm Appointment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay map-modal" id="mapModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeMapModal()">×</button>
+            <h2 class="modal-title">Clinic Location</h2>
+            <p class="modal-subtitle"><span id="mapDoctorName"></span></p>
+
+            <div class="clinic-info">
+                <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+                <div class="info-item">
+                    <i class="fas fa-location-dot"></i>
+                    <span id="clinicAddress"></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+977 984-1234567</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-directions"></i>
+                    <a href="#" onclick="openGoogleMaps(event)" style="color: #4ade80; text-decoration: none; font-weight: 600;">Get Directions in Google Maps</a>
+                </div>
+            </div>
+
+            <div class="map-container" id="mapContainer"></div>
+        </div>
+    </div>
+
+    <div class="notification-toast" id="notificationToast">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">
+            <div class="notification-title">Success</div>
+            <div class="notification-message">Your appointment has been booked successfully!</div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentMap = null;
+        let currentMapData = null;
+
+        function checkUserSession() {
+            const userSession = localStorage.getItem('currentUser');
+            if (userSession) {
+                currentUser = JSON.parse(userSession);
+                updateUserUI();
+            }
+        }
+
+        function updateUserUI() {
+            if (currentUser) {
+                document.getElementById('userLoginIcon').style.display = 'none';
+                document.getElementById('userProfileAvatar').style.display = 'flex';
+                const avatarUrl = currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name);
+                document.getElementById('userAvatarImg').src = avatarUrl;
+                document.getElementById('dropdownAvatar').src = avatarUrl;
+                document.getElementById('dropdownUserName').textContent = currentUser.name;
+                document.getElementById('dropdownUserEmail').textContent = currentUser.email;
+            }
+        }
+
+        document.getElementById('userLoginIcon').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+
+        document.getElementById('userProfileAvatar').addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.querySelector('.user-menu-container');
+            const dropdown = document.getElementById('userDropdown');
+            if (!userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function openBookingModal(doctorName) {
+            if (!currentUser) {
+                showNotification('Please Login First', 'You need to be logged in to book an appointment', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+                return;
+            }
+
+            document.getElementById('bookingModal').classList.add('active');
+            document.getElementById('doctorName').value = doctorName;
+            document.getElementById('selectedDoctor').textContent = doctorName;
+            
+            if (currentUser) {
+                document.getElementById('ownerName').value = currentUser.name;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('appointmentDate').setAttribute('min', today);
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            document.getElementById('bookingForm').reset();
+        }
+
+        function openMapModal(doctorName, address, lat, lng) {
+            document.getElementById('mapModal').classList.add('active');
+            document.getElementById('mapDoctorName').textContent = doctorName;
+            document.getElementById('clinicAddress').textContent = address;
+
+            currentMapData = { lat, lng, doctorName, address };
+
+            setTimeout(() => {
+                if (currentMap) {
+                    currentMap.remove();
+                }
+
+                currentMap = L.map('mapContainer').setView([lat, lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(currentMap);
+
+                const marker = L.marker([lat, lng]).addTo(currentMap);
+                marker.bindPopup(`<b>${doctorName}</b><br>${address}`).openPopup();
+
+                setTimeout(() => {
+                    currentMap.invalidateSize();
+                }, 100);
+            }, 100);
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.remove('active');
+            if (currentMap) {
+                setTimeout(() => {
+                    currentMap.remove();
+                    currentMap = null;
+                }, 300);
+            }
+        }
+
+        function openGoogleMaps(event) {
+            event.preventDefault();
+            if (currentMapData) {
+                const url = `https://www.google.com/maps/search/?api=1&query=${currentMapData.lat},${currentMapData.lng}`;
+                window.open(url, '_blank');
+            }
+        }
+
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const appointmentData = {
+                id: 'APT-' + Date.now(),
+                userId: currentUser ? currentUser.id : null,
+                doctorName: document.getElementById('doctorName').value,
+                ownerName: document.getElementById('ownerName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                petName: document.getElementById('petName').value,
+                petType: document.getElementById('petType').value,
+                serviceType: document.getElementById('serviceType').value,
+                appointmentDate: document.getElementById('appointmentDate').value,
+                appointmentTime: document.getElementById('appointmentTime').value,
+                notes: document.getElementById('notes').value,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
+
+            const appointments = JSON.parse(localStorage.getItem('vetAppointments') || '[]');
+            appointments.push(appointmentData);
+            localStorage.setItem('vetAppointments', JSON.stringify(appointments));
+
+            showNotification('Appointment Booked!', `Your appointment with ${appointmentData.doctorName} for ${appointmentData.serviceType} on ${appointmentData.appointmentDate} at ${appointmentData.appointmentTime} has been confirmed.`, 'success');
+            
+            closeBookingModal();
+        });
+
+        function showNotification(title, message, type = 'success') {
+            const toast = document.getElementById('notificationToast');
+            const icon = toast.querySelector('i');
+            const titleEl = toast.querySelector('.notification-title');
+            const messageEl = toast.querySelector('.notification-message');
+
+            if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle';
+                toast.classList.add('error');
+            } else {
+                icon.className = 'fas fa-check-circle';
+                toast.classList.remove('error');
+            }
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closeBookingModal();
+                    closeMapModal();
+                }
+            });
+        });
+
+        window.addEventListener('load', checkUserSession);
+    </script>
+</body>
+</html>
