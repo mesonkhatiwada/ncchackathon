@@ -123,7 +123,7 @@ function removeImage(index) {
 function handleRescueSubmit(event) {
     event.preventDefault();
     
-    // Wait for database to be ready
+   
     if (typeof dbInitialized === 'undefined' || !dbInitialized) {
         showNotification('Error', 'Database is not ready. Please wait a moment and try again.');
         return;
@@ -170,7 +170,7 @@ function handleRescueSubmit(event) {
         const result = saveRescueReport(rescueData);
         
         if (result.success) {
-            // Update user stats - increment pending rescues
+           
             db.run("UPDATE users SET rescue_pending = rescue_pending + 1 WHERE id = ?", [currentUser.id]);
             saveDatabase();
             
@@ -183,18 +183,18 @@ function handleRescueSubmit(event) {
                 time: 'Just now'
             });
             
-            // Show success modal
+            
             document.getElementById('reportIdDisplay').textContent = rescueData.id;
             document.getElementById('successModal').classList.add('show');
             
-            // Reset form
+            
             document.getElementById('rescueForm').reset();
             uploadedImages = [];
             renderImagePreviews();
             document.getElementById('coordinatesDisplay').classList.remove('show');
             userLocation = null;
             
-            // Reset location button
+            
             const locationBtn = document.querySelector('.location-btn');
             locationBtn.innerHTML = '<i class="ri-focus-line"></i> Use My Current Location';
             locationBtn.style.background = '';
@@ -227,10 +227,10 @@ function showNotification(title, message) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in
+    
     if (!checkSession()) return;
     
-    // Wait for database to initialize
+    
     const checkDbReady = setInterval(() => {
         if (typeof dbInitialized !== 'undefined' && dbInitialized) {
             clearInterval(checkDbReady);

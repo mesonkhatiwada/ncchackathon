@@ -387,7 +387,7 @@ function updateReportStatus(reportId, newStatus) {
             
             // Update user statistics
             if (newStatus === 'completed') {
-                // Update the user's rescue stats
+                
                 try {
                     db.run("UPDATE users SET animals_rescued = animals_rescued + 1, rescue_completed = rescue_completed + 1, rescue_pending = rescue_pending - 1 WHERE id = ?", [report.userId]);
                     saveDatabase();
@@ -395,7 +395,7 @@ function updateReportStatus(reportId, newStatus) {
                     console.error('Error updating user stats:', error);
                 }
             } else if (newStatus === 'in-progress' && report.status === 'pending') {
-                // Just mark as in progress, don't change counters
+                
             }
             
             updateStats();
@@ -446,7 +446,7 @@ function showView(viewId) {
 }
 
 function startAutoRefresh() {
-    // Refresh every 30 seconds
+    
     autoRefreshInterval = setInterval(() => {
         if (dbInitialized) {
             loadAllReports();
@@ -463,7 +463,7 @@ function stopAutoRefresh() {
 }
 
 function playNotificationSound() {
-    // Create a simple beep sound using Web Audio API
+    
     try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
@@ -511,7 +511,7 @@ function showNotification(title, message) {
     }
 }
 
-// Add manual refresh button handler
+
 function manualRefresh() {
     if (dbInitialized) {
         loadAllReports();
@@ -520,13 +520,13 @@ function manualRefresh() {
     }
 }
 
-// Handle page visibility - pause/resume auto-refresh
+
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        // Page is hidden, could reduce refresh rate or pause
+        
         console.log('Dashboard hidden');
     } else {
-        // Page is visible again, refresh immediately
+       
         if (currentNGO && dbInitialized) {
             loadAllReports();
             updateStats();
