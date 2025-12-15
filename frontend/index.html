@@ -69,7 +69,8 @@
                         <div class="user-login-icon" onclick="openModal()" id="userLoginIcon">
                             <i class="ri-user-line"></i>
                         </div>
-                        <div class="user-profile-avatar" onclick="toggleUserMenu()" id="userProfileAvatar" style="display: none;">
+                        <div class="user-profile-avatar" onclick="toggleUserMenu()" id="userProfileAvatar"
+                            style="display: none;">
                             <img src="" alt="User" id="userAvatarImage">
                         </div>
                         <div class="user-dropdown" id="userDropdown">
@@ -445,7 +446,9 @@
                     <i class="ri-checkbox-circle-fill"></i>
                     <h2>Payment Successful!</h2>
                     <p class="donation-amount-display">NPR <span id="successAmount">0</span></p>
-                    <p class="donation-message">Thank you for your generous contribution! Your donation will help us rescue, rehabilitate, and provide loving care to animals in need. Together, we're making a real difference in their lives.</p>
+                    <p class="donation-message">Thank you for your generous contribution! Your donation will help us
+                        rescue, rehabilitate, and provide loving care to animals in need. Together, we're making a real
+                        difference in their lives.</p>
                     <button class="submit-btn" onclick="closeDonationModal()">Close</button>
                 </div>
             </div>
@@ -570,6 +573,9 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZoQvHaMloGq0Z0vwLQUO8"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })();
+    </script>
 </body>
 
 </html>
